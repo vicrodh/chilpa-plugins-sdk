@@ -1,0 +1,18 @@
+[workspace]
+resolver = "2"
+members = ["chilpa-plugin-api", "chilpa-plugin-sdk", "fixture"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+rust-version = "1.90"
+
+# What a plugin is built with. The module is loaded and compiled by Chilpa
+# on every start, so it is built small: no debug information, no unwinding.
+[profile.release]
+opt-level = "s"
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true

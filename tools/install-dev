@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+# Copies a built plugin into the plugins folder of a given data home, for
+# development. It never touches the real one unless that is the one given.
+#
+#   tools/install-dev <built plugin dir> <XDG_DATA_HOME>
+#
+# The built plugin dir is the <out>/<id> folder build-plugin leaves.
+set -euo pipefail
+built=${1:?usage: install-dev <built plugin dir> <XDG_DATA_HOME>}
+data_home=${2:?usage: install-dev <built plugin dir> <XDG_DATA_HOME>}
+[ -f "$built/manifest.json" ] && [ -f "$built/plugin.wasm" ] || {
+    echo "install-dev: $built is not a built plugin" >&2; exit 1; }
+id=$(basename "$built")
+mkdir -p "$data_home/chilpa/plugins/$id"
+cp "$built/manifest.json" "$built/plugin.wasm" "$data_home/chilpa/plugins/$id/"
+echo "install-dev: $data_home/chilpa/plugins/$id"

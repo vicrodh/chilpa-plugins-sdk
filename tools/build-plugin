@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+# Builds a plugin crate into the folder Chilpa installs: <out>/<id>/ with
+# plugin.wasm and manifest.json.
+#
+#   tools/build-plugin <crate dir> <out dir>
+#
+# The crate dir holds the Cargo.toml and the manifest.json. The release
+# profile of the workspace it belongs to should strip debug information:
+# without that a module of a few hundred kilobytes weighs megabytes.
+#
+# The target has to be installed once per machine:
+#   rustup target add wasm32-unknown-unknown
+set -euo pipefail
+
+crate_dir=$(cd "${1:?usage: build-plugin <crate dir> <out dir>}" && pwd)
+out_dir=${2:?usage: build-plugin <crate dir> <out dir>}
+manifest="$crate_dir/manifest.json"
+[ -f "$manifest" ] || { echo "build-plugin: $manifest is missing" >&2; exit 1; }
+
+id=$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["id"])' "$manifest")
+name=$(cargo metadata --no-deps --format-version 1 --manifest-path "$crate_dir/Cargo.toml" |
+    python3 -c 'import json,sys; d=json.load(sys.stdin); m=sys.argv[1]; print(next(p["name"] for p in d["packages"] if p["manifest_path"]==m))' "$crate_dir/Cargo.toml")
+target_dir=$(cargo metadata --no-deps --format-version 1 --manifest-path "$crate_dir/Cargo.toml" |
+    python3 -c 'import json,sys; print(json.load(sys.stdin)["target_directory"])')
+
+cargo build --manifest-path "$crate_dir/Cargo.toml" -p "$name" --lib --release --target wasm32-unknown-unknown
+
+wasm="$target_dir/wasm32-unknown-unknown/release/${name//-/_}.wasm"
+[ -f "$wasm" ] || { echo "build-plugin: $wasm was not produced; is the crate a cdylib?" >&2; exit 1; }
+
+mkdir -p "$out_dir/$id"
+cp "$wasm" "$out_dir/$id/plugin.wasm"
+cp "$manifest" "$out_dir/$id/manifest.json"
+echo "build-plugin: $out_dir/$id/plugin.wasm $(stat -c %s "$out_dir/$id/plugin.wasm") bytes"
+sha256sum "$out_dir/$id/plugin.wasm"
