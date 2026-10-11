@@ -1,8 +1,9 @@
-# chilpa-plugins
+# chilpa-plugins-sdk
 
 I keep the versioned WASM protocol, Rust SDK, host-test fixture, developer
-documentation, and wiki source pages in this repository. The plugin sources
-live in their own repositories: [Radio](https://github.com/vicrodh/chilpa-pg-radio),
+documentation, and wiki source pages in this repository. The installable
+plugin catalog lives at [chilpa-plugins](https://github.com/vicrodh/chilpa-plugins).
+The plugin sources live in their own repositories: [Radio](https://github.com/vicrodh/chilpa-pg-radio),
 [Podcasts](https://github.com/vicrodh/chilpa-pg-podcasts), and
 [Playlist Import](https://github.com/vicrodh/chilpa-pg-playlist-import).
 

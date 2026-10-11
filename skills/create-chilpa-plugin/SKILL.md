@@ -36,7 +36,7 @@ Do not claim that merely having a catalog API grants streaming rights.
   a separate process, or self-managed account credentials are necessary.
   The host currently starts process plugins only on Linux.
 
-If a `chilpa-plugins` checkout is available, also read its current
+If a `chilpa-plugins-sdk` checkout is available, also read its current
 `wiki/` page for the selected runtime and its `docs/` contract for any
 optional process feature. Check the target Chilpa host code or pinned
 version before claiming a feature works. Do not turn a design document

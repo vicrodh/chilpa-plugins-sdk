@@ -14,7 +14,7 @@ passes `/data`, `/cache`, locale, host identity, and
 `playback_events: 1` in its greeting.
 
 For a source I verify `search` and `track.resolve` against the host
-before adding optional contracts. In the `chilpa-plugins` checkout,
+before adding optional contracts. In the `chilpa-plugins-sdk` checkout,
 `docs/native-pages.md` covers `page.get`, `page.action`, library
 cards, quality and playlist editing; `docs/playback-events.md` covers
 measured playback; `docs/track-lyrics.md` covers this source's own

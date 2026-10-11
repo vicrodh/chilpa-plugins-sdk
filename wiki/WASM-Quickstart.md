@@ -25,10 +25,10 @@ that ID.
 
 The example's SDK dependency is a workspace-relative path for local use.
 In a separate repository I replace it with a reviewed immutable SDK pin,
-using the public `chilpa-plugins` URL:
+using the public `chilpa-plugins-sdk` URL:
 
 ```toml
-chilpa-plugin-sdk = { git = "https://github.com/vicrodh/chilpa-plugins", rev = "<reviewed commit>" }
+chilpa-plugin-sdk = { git = "https://github.com/vicrodh/chilpa-plugins-sdk", rev = "<reviewed commit>" }
 ```
 
 I can use an immutable tag instead of `rev`. I do not track the moving
