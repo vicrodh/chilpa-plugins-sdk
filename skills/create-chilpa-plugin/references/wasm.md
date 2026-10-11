@@ -8,6 +8,13 @@ returns `Result<Reply, String>`. Relevant exports include
 `chilpa_playlists`, `chilpa_playlist_tracks`, and `chilpa_revoke`.
 The host asks only for operations that the manifest declares.
 
+The public [Radio plugin](https://github.com/vicrodh/chilpa-pg-radio) is a
+working account-free source reference. I inspect its `manifest.json`,
+`src/`, and recorded tests for mediated directory requests, stable station
+IDs, mirror fallback, stream resolution, and unavailable HLS entries. Its
+network domain and station parsing belong to that service; I derive a new
+plugin's permissions and data mapping from its own implementation.
+
 Each call receives a fresh instance. I use `host::store_get` and
 `host::store_set` only with `storage` declared. I use `host::http` or
 `host::get` only for exact domain hosts declared by `network`. A failed

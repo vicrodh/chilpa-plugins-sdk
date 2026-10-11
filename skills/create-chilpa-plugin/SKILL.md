@@ -29,7 +29,9 @@ Do not claim that merely having a catalog API grants streaming rights.
 - Read [references/wasm.md](references/wasm.md) for a plugin that can use
   host-mediated HTTP, storage, clock, and logging. Start from the SDK's
   `examples/hello-source` for a catalog-only source or `fixture` for
-  search, browsing, and resolution.
+  search, browsing, and resolution. For a real account-free source, inspect
+  the public Radio plugin linked in that reference; adapt its contract and
+  tests, not its service-specific IDs or endpoints.
 - Read [references/process.md](references/process.md) when native code,
   a separate process, or self-managed account credentials are necessary.
   The host currently starts process plugins only on Linux.

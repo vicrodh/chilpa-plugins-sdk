@@ -34,6 +34,17 @@ The detailed native contracts are [catalog pages](docs/native-pages.md),
 and [lyrics of a source's own tracks](docs/track-lyrics.md). These documents
 describe process plugins; they do not add WASM exports.
 
+## Real WASM reference
+
+[Radio](https://github.com/vicrodh/chilpa-pg-radio) is an account-free source
+to study after the minimal `hello-source` example. It uses a public station
+directory, declares the network and storage permissions it needs, and covers
+search, browsing, stream resolution, and recorded-response tests. It marks
+HLS-only stations unavailable because the current WASM stream path cannot
+play them. [Podcasts](https://github.com/vicrodh/chilpa-pg-podcasts) asks no
+credential from listeners, but its directory calls require an application
+secret held by Chilpa's proxy; Radio is the simpler credential-free reference.
+
 ## Workspace
 
 - `chilpa-plugin-api` defines the WASM v1 messages. It depends on `serde`.
@@ -73,9 +84,9 @@ into my Codex skills directory; its `references/` files travel with it.
 
 With the skill installed, this prompt is enough to start a plugin:
 
-> Use $create-chilpa-plugin to create a Chilpa plugin for Bandcamp. Research the service API and Chilpa host support, choose the
-> runtime, implement only verified capabilities, and test the package in an
-> isolated profile.
+> Use $create-chilpa-plugin to create a Chilpa plugin for Bandcamp. Research
+> the service API and Chilpa host support, choose the runtime, implement only
+> verified capabilities, and test the package in an isolated profile.
 
 Replace the service and desired behavior with your own request. The skill
 checks permissions, credentials, SDK pins, and the host contract before

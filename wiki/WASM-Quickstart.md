@@ -7,6 +7,14 @@ catalog-only source: it intentionally declares `delivers_audio: false`.
 The `fixture` crate shows browsing, pagination, search, and resolution with
 recorded responses.
 
+For a complete account-free source, I read the public
+[Radio plugin](https://github.com/vicrodh/chilpa-pg-radio) after the small
+example. Its `manifest.json` declares the network host and storage used by
+the code; its recorded tests cover browsing, search, resolution, and a mirror
+fallback. It marks HLS-only stations unavailable under the current WASM
+playback contract. I treat its directory URLs and station fields as
+service-specific choices, not as part of the SDK API.
+
 ## Start from the example
 
 I copy `examples/hello-source` into its own plugin repository and change
