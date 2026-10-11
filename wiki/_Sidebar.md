@@ -1,0 +1,5 @@
+- [Home](Home.md)
+- [WASM quickstart](WASM-Quickstart.md)
+- [Native plugins](Native-Plugins.md)
+- [Manifest and permissions](Manifest-and-Permissions.md)
+- [Compatibility and testing](Compatibility-and-Testing.md)

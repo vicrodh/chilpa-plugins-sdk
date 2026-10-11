@@ -35,6 +35,7 @@ pub use serde;
 pub use serde_json;
 
 pub mod host;
+pub mod cache;
 #[cfg(not(target_arch = "wasm32"))]
 pub mod testing;
 

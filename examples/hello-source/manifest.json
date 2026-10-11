@@ -1,0 +1,13 @@
+{
+  "id": "app.example.hello",
+  "name": "Hello Source",
+  "version": "0.1.0",
+  "api_version": 1,
+  "kind": "source",
+  "delivers_audio": false,
+  "description": "A local catalog example with one item",
+  "capabilities": [
+    { "type": "register_source" },
+    { "type": "register_panel" }
+  ]
+}
