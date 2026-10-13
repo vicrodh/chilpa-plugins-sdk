@@ -1,39 +1,36 @@
 # WASM contract
 
-I use `chilpa-plugin-sdk` for a WASM plugin. The `plugin!` macro exports
-`chilpa_api_version`, `chilpa_alloc`, and each declared operation. The
-function named by an export takes one `chilpa_plugin_sdk::api` message and
-returns `Result<Reply, String>`. Relevant exports include
-`chilpa_search`, `chilpa_browse`, `chilpa_resolver`,
-`chilpa_playlists`, `chilpa_playlist_tracks`, and `chilpa_revoke`.
-The host asks only for operations that the manifest declares.
+Use `chilpa-plugin-sdk`. The `plugin!` macro exports `chilpa_api_version`,
+`chilpa_alloc` and each declared operation. Each operation's function takes
+one `chilpa_plugin_sdk::api` message and returns `Result<Reply, String>`. The
+exports include `chilpa_search`, `chilpa_browse`, `chilpa_resolver`,
+`chilpa_playlists`, `chilpa_playlist_tracks` and `chilpa_revoke`. The host
+asks only for the operations the manifest declares.
 
 The public [Radio plugin](https://github.com/vicrodh/chilpa-pg-radio) is a
-working account-free source reference. I inspect its `manifest.json`,
-`src/`, and recorded tests for mediated directory requests, stable station
-IDs, mirror fallback, stream resolution, and unavailable HLS entries. Its
-network domain and station parsing belong to that service; I derive a new
-plugin's permissions and data mapping from its own implementation.
+working source with no account. Its `manifest.json`, `src/` and recorded
+tests show directory requests through the host, stable station IDs, mirror
+fallback, stream resolution and unavailable HLS entries. Its network domain
+and station parsing belong to that service; derive a new plugin's
+permissions and data mapping from its own code.
 
-Each call receives a fresh instance. I use `host::store_get` and
-`host::store_set` only with `storage` declared. I use `host::http` or
-`host::get` only for exact domain hosts declared by `network`. A failed
-transport returns `Err`; an HTTP 404 or 429 is still a `Response`.
-The directory `cache::get` uses the store and is for bounded directory
-reads, not credentials or audio.
+Every call gets a fresh instance. Use `host::store_get` and
+`host::store_set` only with `storage` declared, and `host::http` or
+`host::get` only for the exact hosts declared under `network`. A transport
+failure returns `Err`; an HTTP 404 or 429 is still a `Response`. The
+directory cache, `cache::get`, lives in the store and is for bounded
+directory reads, never credentials or audio.
 
-For a source I keep the same stable external ID in search, browse, and
-resolve. A resolver returns a `Stream` whose delivery is supported by the
-target host. The current WASM API does not play HLS through `Stream`;
-I mark such an entry unavailable. When no audio is available, I set
-`delivers_audio: false` in the manifest and do not invent a URL.
-The API's cleanup caps each entity kind at 500 per reply, entry facts at
-24, and root columns at four. Pagination must terminate.
+Keep the same stable external ID through search, browse and resolve. A
+resolver returns a `Stream` the target host can deliver. The current WASM
+API cannot play HLS through `Stream`, so mark those entries unavailable.
+With no audio at all, set `delivers_audio: false` in the manifest and never
+invent a URL. Each reply is capped at 500 entities of each kind, 24 facts per
+entry and four root columns. Pagination must end.
 
-For a standalone Rust plugin I replace the local SDK path with a reviewed
-immutable Git `rev` or tag. `protocol-4` is the current pin used by the
-host and existing WASM plugins; it is a Git label, while
-`manifest.api_version` is 1. I test logic natively with
+In a standalone plugin, replace the local SDK path with a reviewed Git `rev`
+or tag. The host and the existing WASM plugins pin `protocol-4`, which is a
+Git label; `manifest.api_version` is 1. Test the logic natively with
 `chilpa_plugin_sdk::testing`, build `wasm32-unknown-unknown` in release
-mode, package `manifest.json` and `plugin.wasm` under the manifest ID,
-and load the package in Chilpa.
+mode, package `manifest.json` and `plugin.wasm` under the manifest ID, and
+load the package in Chilpa.

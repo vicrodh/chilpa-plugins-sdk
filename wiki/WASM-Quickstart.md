@@ -1,44 +1,40 @@
 # WASM quickstart
 
-I use WASM when a plugin can hand catalog data and stream locations to Chilpa
-through the host's limited ABI. Chilpa performs audio decoding and output.
-The minimal `examples/hello-source` crate in this repository is a
-catalog-only source: it intentionally declares `delivers_audio: false`.
-The `fixture` crate shows browsing, pagination, search, and resolution with
-recorded responses.
+Use WASM when the plugin only has to hand Chilpa catalog data and stream
+locations through the host's limited ABI. Chilpa does the decoding and the
+output. `examples/hello-source` is a minimal catalog-only source, with
+`delivers_audio: false` on purpose. The `fixture` crate shows browsing,
+pagination, search and resolution against recorded replies.
 
-For a complete account-free source, I read the public
-[Radio plugin](https://github.com/vicrodh/chilpa-pg-radio) after the small
-example. Its `manifest.json` declares the network host and storage used by
-the code; its recorded tests cover browsing, search, resolution, and a mirror
-fallback. It marks HLS-only stations unavailable under the current WASM
-playback contract. I treat its directory URLs and station fields as
-service-specific choices, not as part of the SDK API.
+For a complete source with no account, read the
+[Radio plugin](https://github.com/vicrodh/chilpa-pg-radio) after the example.
+Its manifest declares the network host and storage the code uses, and its
+recorded tests cover browsing, search, resolution and falling back to another
+mirror. HLS-only stations are marked unavailable under the current WASM
+playback contract. Its directory URLs and station fields belong to that
+service, not to the SDK API.
 
 ## Start from the example
 
-I copy `examples/hello-source` into its own plugin repository and change
-the manifest ID, name, description, and crate name. The ID is a stable,
-lowercase reverse domain with at least one dot. The package contains
-`manifest.json` and `plugin.wasm` under a directory named exactly after
-that ID.
+Copy `examples/hello-source` into its own repository and change the manifest
+ID, name and description, and the crate name. The ID is a stable lowercase
+reverse domain with at least one dot. The package is `manifest.json` and
+`plugin.wasm` inside a directory named exactly after that ID.
 
-The example's SDK dependency is a workspace-relative path for local use.
-In a separate repository I replace it with a reviewed immutable SDK pin,
-using the public `chilpa-plugins-sdk` URL:
+The example points at the SDK by a path inside this workspace. In your own
+repository, pin a reviewed commit of the public SDK instead:
 
 ```toml
 chilpa-plugin-sdk = { git = "https://github.com/vicrodh/chilpa-plugins-sdk", rev = "<reviewed commit>" }
 ```
 
-I can use an immutable tag instead of `rev`. I do not track the moving
-`main` branch in a released plugin. The host's `chilpa-plugin-api`
-dependency and the plugin must use compatible revisions.
+A tag works too. Never track `main` in a released plugin. The host's
+`chilpa-plugin-api` revision and the plugin's must be compatible.
 
 ## Export operations
 
 Each operation takes one message from `chilpa_plugin_sdk::api` and returns
-`Result<Reply, String>`. I declare its export with `plugin!`:
+`Result<Reply, String>`. Declare the exports with `plugin!`:
 
 ```rust
 plugin! {
@@ -48,27 +44,27 @@ plugin! {
 }
 ```
 
-The manifest advertises what the host may ask. A source with audio also
-exports `chilpa_resolver` and returns a `Stream` for its own stable
-`external_id`. I keep the same identity through search, browse, queue, and
-resolve. I set `delivers_audio: false` or `playable: false` when I cannot
-actually supply supported audio. A segmented HLS response is not currently
-playable through the WASM `Stream` API.
+The host asks only for what the manifest advertises. A source with audio
+also exports `chilpa_resolver` and returns a `Stream` for its own stable
+`external_id`. Keep that ID the same through search, browse, queue and
+resolve. If the plugin cannot supply audio Chilpa can play, set
+`delivers_audio: false` or `playable: false`. A segmented HLS response can't
+be played through the WASM `Stream` API yet.
 
-The SDK's `host` module supplies mediated `http`, `get`, `now`, `log`,
-`store_get`, and `store_set`. I declare `network` for every HTTP domain
-and `storage` before using the store. Each WASM call gets a fresh instance:
-values in Rust statics do not persist between calls. `cache::get` also needs
-`storage`; it saves a bounded directory cache and request budget in that
-store. I do not use it for account or audio responses.
+The SDK's `host` module provides `http`, `get`, `now`, `log`, `store_get`
+and `store_set`, all through the host. Declare `network` for every HTTP
+domain and `storage` before touching the store. Every WASM call gets a fresh
+instance, so Rust statics do not survive between calls. `cache::get` keeps a
+bounded directory cache and request budget in the store, so it also needs
+`storage`. Don't use it for account or audio responses.
 
 ## Test and package
 
-I test operation logic natively. `chilpa_plugin_sdk::testing` records HTTP
-answers, clock values, store values, and requested URLs without real
-network access. I test at least the ID path from listing or search to
-resolution, empty or malformed service responses, pagination termination,
-and unavailable streams when those paths exist.
+Test the operation logic natively. `chilpa_plugin_sdk::testing` records HTTP
+answers, clock values, store values and requested URLs with no real network.
+Cover at least the ID's path from a listing or search to resolution, empty or
+malformed replies, pagination that ends, and unavailable streams when the
+plugin has them.
 
 ```sh
 cargo test --offline --manifest-path examples/hello-source/Cargo.toml
@@ -77,14 +73,13 @@ tools/build-plugin examples/hello-source <out-dir>
 tools/install-dev <out-dir>/app.example.hello <test-XDG_DATA_HOME>
 ```
 
-I run these from the SDK repository for the unmodified example. In a
-separate plugin repository I use that repository's own `tools/build-plugin`
-or call the SDK repository's script with the plugin crate path. The build
-script uses the release profile and writes `plugin.wasm` and a copied
-`manifest.json`. The install script copies into a development data home;
-I use an isolated home for host smoke tests.
+Those commands run the unmodified example from this repository. In your own
+repository, use its copy of `tools/build-plugin`, or call this repository's
+script with your crate's path. The build uses the release profile and writes
+`plugin.wasm` plus a copy of `manifest.json`. `install-dev` copies the result
+into a development data home; use an isolated one for host tests.
 
-Native `cargo test` does not validate the WASM ABI. I also compile the
-WASM target, load the package in Chilpa, and exercise its declared operations.
-I read [Compatibility and testing](Compatibility-and-Testing.md) before
-calling the package ready.
+Native `cargo test` does not check the WASM ABI. Also build the WASM target,
+load the package in Chilpa and run every operation it declares. Then read
+[Compatibility and testing](Compatibility-and-Testing.md) before calling it
+ready.

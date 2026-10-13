@@ -36,7 +36,7 @@ fn reply(saved: &Saved) -> Response {
     Response { status: 200, body: saved.body.clone(), ..Response::default() }
 }
 
-/// I reuse listings across WASM invocations; failures never trigger immediate retries.
+/// Reuses listings across WASM invocations; a failure never triggers an immediate retry.
 /// At most 20 uncached reads a minute leave room for other application services.
 pub fn get(url: &str, ttl: i64) -> Result<Response, String> {
     let now = host::now();

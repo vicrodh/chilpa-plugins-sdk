@@ -1,16 +1,16 @@
 # Native catalog pages
 
-This contract is for JSON-RPC process plugins. It does not add exports to the
-Rust WASM SDK. I check the target host's `pages` negotiation and `page.get`
-handling before advertising it. The wiki's `Native-Plugins.md` is the
-starting point for a new process plugin.
+This contract is for JSON-RPC process plugins; it adds no exports to the Rust
+WASM SDK. Check the target host's `pages` negotiation and `page.get`
+handling before advertising it. A new process plugin starts at the wiki's
+`Native-Plugins.md`.
 
-I advertise `capabilities.pages: true` in `initialize` to supply native pages. The host renders the documents with its album grids, artist portraits, track lists and navigation. References stay opaque to the host.
+A plugin that supplies native pages advertises `capabilities.pages: true` in `initialize`. The host renders the documents with its album grids, artist portraits, track lists and navigation. References stay opaque to the host.
 
-I can supply optional `capabilities.navigation` titles in `initialize`, for example
-`{"discover":"Music","library":"Collection","albums":"Albums"}`. The stable
-section IDs and routes do not change. Missing or empty titles keep the host's
-defaults. I supply titles in the requested locale.
+`initialize` can also carry optional `capabilities.navigation` titles, in the
+requested locale, for example
+`{"discover":"Music","library":"Collection","albums":"Albums"}`. Section IDs
+and routes stay the same. A missing or empty title keeps the host's default.
 
 `page.get({"ref":"<reference>","refresh":false})` returns a document:
 
@@ -26,23 +26,22 @@ defaults. I supply titles in the requested locale.
 }
 ```
 
-A listing returns `items` and an optional `next` reference instead of `shelves`. The host preserves each page in navigation history. I use stable section IDs so the listener's visibility, order and size preferences survive content changes.
+A listing returns `items` and an optional `next` reference instead of `shelves`. The host keeps each page in navigation history. Keep section IDs stable so the listener's visibility, order and size preferences survive content changes.
 
-Each item uses the same shape as `library.list`: `kind` (`album`, `artist`, `label`, `playlist` or `track`), `ref`, `title`, `image`, `artist`, `artist_ref`, `album_ref`, `year`, `duration_ms`, `genre`, `label`, `label_ref`, `release_date` and `quality` are optional except the item's identity. Track references may include playback context; I interpret and validate them in the plugin, including favorite and resolve operations. The host passes the complete reference unchanged.
+Each item uses the same shape as `library.list`: `kind` (`album`, `artist`, `label`, `playlist` or `track`), `ref`, `title`, `image`, `artist`, `artist_ref`, `album_ref`, `year`, `duration_ms`, `genre`, `label`, `label_ref`, `release_date` and `quality` are optional except the item's identity. Track references may carry playback context; the plugin interprets and validates them, including for favorite and resolve operations. The host passes the whole reference back unchanged.
 
-I can add a `header` with item identity, image and description to an artist, label or spotlight page. A shelf can supply `extra_tracks` alongside its cards. Playlist shelves can supply `tags` (`id`, `slug`, `name`); each playlist carries its matching tags. The host filters these without replacing playlist identity.
+An artist, label or spotlight page can have a `header` with item identity, image and description. A shelf can supply `extra_tracks` alongside its cards. Playlist shelves can supply `tags` (`id`, `slug`, `name`); each playlist carries its matching tags. The host filters these without replacing playlist identity.
 
-For catalog quality I supply `quality: {"codec":"flac","tier":"hi_res"}`
-when the provider advertises high-resolution lossless audio but omits the exact
-resolution. I only include `bits` and `rate` when the provider supplies those
-numbers. The host shows the advertised tier without inventing a sample rate;
+When the provider advertises high-resolution lossless audio without the exact
+resolution, catalog quality is `quality: {"codec":"flac","tier":"hi_res"}`.
+Include `bits` and `rate` only when the provider gives those numbers. The host shows the advertised tier without inventing a sample rate;
 the decoded stream's measured format takes precedence during playback.
 
 Discover documents can include `tab`, `genres` (`id`, `name`) and `genre_filter`. The native Discover convention uses `discover:<tab>:<comma-separated-genre-ids>`. Preferences are isolated by plugin and tab. Ordinary pages need not implement that convention.
 
-A document can set `personal: true` when its content depends on listening history. After the plugin acknowledges a measured playback start, I invalidate only its personal pages. Ordinary catalog pages remain cached.
+A document can set `personal: true` when its content depends on listening history. After the plugin acknowledges a measured playback start, the host invalidates only that plugin's personal pages. Ordinary catalog pages stay cached.
 
-Album metadata can include `credits`, `booklets` (`name`, `url`), `copyright`, `upc`, `description` and related `shelves`. I keep navigation references on the album and its tracks so artist and album context links stay within the source. Booklet URLs are opened only when the listener clicks them.
+Album metadata can include `credits`, `booklets` (`name`, `url`), `copyright`, `upc`, `description` and related `shelves`. Keep navigation references on the album and its tracks so artist and album links stay within the source. Booklet URLs are opened only when the listener clicks them.
 
 `page.action` performs explicit listener actions:
 
@@ -53,7 +52,7 @@ Album metadata can include `credits`, `booklets` (`name`, `url`), `copyright`, `
 
 A successful action invalidates the relevant source library and personal pages. Errors remain visible in the source status. A plugin owns its pins and account data; uninstall removes them with its private data directory.
 
-Playback history must come from the audible playback lifecycle, never from a catalog fetch or preloading. I use the [playback events contract](playback-events.md), keep each playback ID once, and associate history with the account that resolved the stream.
+Playback history must come from the audible playback lifecycle, never from a catalog fetch or preloading. Use the [playback events contract](playback-events.md), count each playback ID once, and tie history to the account that resolved the stream.
 
 ## Availability
 
@@ -91,11 +90,11 @@ is separate and must not be described as host normalization.
 
 ## Playlist editing
 
-I advertise `capabilities.playlist_edit: true` when a source implements the
-playlist actions below through `page.action`. The host shows creation on its
-playlist library tab. Playlist cards carry `editable`, `copyable`, `public`
-and `description`; I only set `editable` for the current account's own lists.
-The plugin checks ownership again before every write.
+A source that implements the playlist actions below through `page.action`
+advertises `capabilities.playlist_edit: true`. The host then offers creation
+on its playlist library tab. Playlist cards carry `editable`, `copyable`,
+`public` and `description`; set `editable` only on the current account's own
+lists. The plugin checks ownership again before every write.
 
 Actions share an opaque playlist `ref`:
 
@@ -112,8 +111,8 @@ Actions share an opaque playlist `ref`:
 
 A membership identifies one occurrence, not a song. Duplicate songs retain
 separate track refs and membership strings. A missing membership disables
-per-entry editing without hiding the row. I preserve the playlist listening
-context when resolving a ref that also carries membership identity.
+per-entry editing without hiding the row. When resolving a ref that also
+carries membership identity, keep the playlist's listening context.
 
 Successful writes return `changed_refs`, an array of affected playlist refs.
 The host invalidates those cards' tracks, its native page documents and
@@ -122,17 +121,18 @@ pending/completed/error state per source and echoes a UI `request_id`;
 controls wait for completion, and an error leaves the editor open. Removing
 a plugin clears this transient action state and late replies are discarded.
 
-I do not automatically retry writes: a timed-out request may have reached the
-service. Copying a large list can create the destination before a later
+Writes are never retried automatically: a timed-out request may have reached
+the service. Copying a large list can create the destination before a later
 track batch fails; the error identifies that partial list for inspection.
 
 ## Shared playlists and folders
 
-I advertise `playlist_edit: true` and `library: ["playlists"]` to expose source-owned
-playlists in the shared picker. Each playlist carries `editable` for the current
-account. Source-owned playlists accept only references belonging to that source;
-local playlists can retain tracks from several sources. I keep the source identity
-and metadata when a source is disabled, and unavailable tracks stay in place.
+To show source-owned playlists in the shared picker, advertise
+`playlist_edit: true` and `library: ["playlists"]`. Each playlist carries
+`editable` for the current account. Source-owned playlists accept only
+references from that source; local playlists can hold tracks from several
+sources. When a source is disabled, its identity and metadata are kept, and
+unavailable tracks stay in place.
 
 `playlist.create` returns `item.ref` or `ref` naming the created playlist. The host
 can then call `playlist.add` in batches, waiting for each acknowledgement. A partial

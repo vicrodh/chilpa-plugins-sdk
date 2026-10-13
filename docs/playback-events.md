@@ -1,15 +1,15 @@
 # Native plugin playback events, version 1
 
-I define this optional extension for native process plugins using JSON-RPC
-protocol 1. I keep provider-specific reporting, authentication, request bodies,
-thresholds and retries inside each plugin. The host sends playback facts.
+An optional extension for native process plugins on JSON-RPC protocol 1. The
+host sends playback facts. Provider-specific reporting, authentication,
+request bodies, thresholds and retries stay inside each plugin.
 
-**Integration status:** the host implements version 1 for local queue playback
-through native process sources. It retains resolution tickets through preload,
-measures consumed frames with the output's `held()` accounting, and delivers
-requests through a persistent background queue. Casting uses advancing positions
-reported by the receiver, with the limitations below. This extension does not
-add a WASM export or change the existing WASM ABI.
+**Status:** the host implements version 1 for local queue playback through
+native process sources. It keeps resolution tickets through preload, measures
+consumed frames with the output's `held()` accounting, and delivers requests
+through a persistent background queue. Casting uses the advancing positions
+the receiver reports, with the limits described below. The extension adds no
+WASM export and leaves the WASM ABI as it is.
 
 ## Negotiation and stream identity
 
@@ -163,8 +163,8 @@ provider-specific API tests belong to that plugin.
 
 ## Current host implementation
 
-I keep up to 1,024 pending occurrences in a private, atomically replaced
-`native-playback-events.json` under the host data directory. The file contains
+The host keeps up to 1,024 pending occurrences in a private, atomically
+replaced `native-playback-events.json` under its data directory. The file contains
 plugin IDs, opaque tickets and playback facts, never stream URLs or provider
 credentials. The audio thread only updates bounded memory. A worker persists
 requests before delivery, requires `accepted: true`, and retries the exact
@@ -175,7 +175,7 @@ reporting yields to audio; existing pending terminal events are retained.
 A live occurrence checkpoints each additional second of measured audio and on
 observed pause/seek transitions. Updates depend on the render loop sampling
 the output; a blocked decoder or a backend drain can delay delivery until the
-next measurement. I do not infer consumption while that measurement is absent.
+next measurement. No consumption is inferred while that measurement is missing.
 Backend frame accounting is the measurement boundary, not a claim that a
 physical speaker was audible. An output backend must report its held frames
 accurately; a sink that consumes writes immediately may leave `held()` at zero.
@@ -194,23 +194,24 @@ must not depend on those optional fields to compute listening duration.
 
 ## Removing a source
 
-I stop its process and cancel its pending playback reports when the listener
-uninstalls a source. I remove its account data, private cache, integration
-preferences and queued tracks locally. Uninstalling does not delete the
-listener's account or playlists at the remote service.
+When the listener uninstalls a source, the host stops its process, cancels
+its pending playback reports, and removes its account data, private cache,
+integration preferences and queued tracks locally. The listener's account and
+playlists at the remote service are not touched.
 
 ## Receiver playback measurements
 
-For casting, I retain the resolved resource's observer through the receiver
-session. Loading a URL and serving byte ranges emit no playback event. I begin
-reporting only after receiver status shows a positive position delta following
-a playing state. I cap each delta by the elapsed polling interval and discard
-large jumps; successful seeks reset the position baseline. Paused or buffering
+For casting, the host keeps the resolved resource's observer for the whole
+receiver session. Loading a URL and serving byte ranges emit no playback
+event. Reporting starts only when the receiver's status shows the position
+moving forward after a playing state. Each delta is capped by the elapsed
+polling interval and large jumps are discarded; a successful seek resets the
+position baseline. Paused or buffering
 intervals do not advance the counter. A missing position clears the baseline.
 
 These are receiver-reported measurements, not local device frame accounting
 or proof that a physical speaker was audible. Missing or coarse status updates
 can undercount. A receiver that supplies no advancing positions produces no
-reports; I do not substitute downloaded bytes or elapsed wall time. Natural
+reports; downloaded bytes and elapsed wall time never stand in for it. Natural
 completion, stop, replacement, disconnect and failure retain only confirmed
 checkpoints and terminate each occurrence once.

@@ -1,8 +1,8 @@
 # Lyrics of a source's own tracks
 
-This contract is for JSON-RPC process sources. It does not add a WASM
-`chilpa_track_lyrics` export. I check the target host's
-`track_lyrics` negotiation before advertising it.
+This contract is for JSON-RPC process sources; there is no WASM
+`chilpa_track_lyrics` export. Check that the target host negotiates
+`track_lyrics` before advertising it.
 
 Lyrics belong to Chilpa, not to a plugin. Chilpa finds a track's lyrics in
 this order: a file next to the track or its tags, what the track's source

@@ -1,36 +1,40 @@
 # Process contract
 
-I set `"runtime": "process"` in `manifest.json` and package an executable
-named `plugin`. The target host currently launches it only inside the
-Linux sandbox. It speaks JSON-RPC 2.0, one object per line on standard
-input and output. I use standard error for diagnostics and return each
-request's `id`. The host may make concurrent calls, so I keep reading
-input while another call waits.
+Set `"runtime": "process"` in `manifest.json` and package an executable
+named `plugin`. The host launches it only inside its Linux sandbox for now.
+It speaks JSON-RPC 2.0, one object per line on standard input and output.
+Diagnostics go to standard error, and every reply echoes its request's `id`.
+The host makes concurrent calls, so keep reading input while another call
+waits.
 
-The first host request is `initialize`; I answer with `protocol: 1` and
-only capabilities whose methods work. This is separate from manifest
-`api_version: 1` and from manifest permission requests. The current host
-passes `/data`, `/cache`, locale, host identity, and
-`playback_events: 1` in its greeting.
+The first request is `initialize`. Answer with `protocol: 1` and only the
+capabilities whose methods work. That number is separate from the manifest's
+`api_version: 1` and from its permissions. The current host's greeting
+carries `/data`, `/cache`, the locale, the host identity and
+`playback_events: 1`.
 
-For a source I verify `search` and `track.resolve` against the host
-before adding optional contracts. In the `chilpa-plugins-sdk` checkout,
-`docs/native-pages.md` covers `page.get`, `page.action`, library
-cards, quality and playlist editing; `docs/playback-events.md` covers
-measured playback; `docs/track-lyrics.md` covers this source's own
-lyrics; and `docs/plugin-cooperation.md` covers `host.request` and
-`host.reply`. I read the applicable contract and the target host code
-before advertising its capability.
+For a source, get `search` and `track.resolve` working against the host
+before adding optional contracts. In a `chilpa-plugins-sdk` checkout:
 
-The broker grants only declared `plugins_read`, `library_read`, or
-`playlists_write` operations. I do not read another plugin's files or
-credentials or call it directly. A broker write that times out may have
-committed; I check its destination before retrying. I declare
-`folder_write` for a selected export folder. I use `own_account` only
-when the process owns its auth and disclose its credential storage honestly.
-I never log credentials, stream URLs, or resolution tickets.
+- `docs/native-pages.md`: `page.get`, `page.action`, library cards, quality
+  and playlist editing.
+- `docs/playback-events.md`: measured playback.
+- `docs/track-lyrics.md`: lyrics of the source's own tracks.
+- `docs/plugin-cooperation.md`: `host.request` and `host.reply`.
 
-I test concurrent requests, malformed input, a closed pipe, timeout,
-permission denial, startup, and restart. I run a host smoke against the
-exact packaged executable in an isolated profile. A unit test of the
-JSON-RPC handler alone does not prove the sandbox can launch it.
+Read the contract and the target host's code before advertising a
+capability.
+
+The broker allows only the `plugins_read`, `library_read` and
+`playlists_write` operations the manifest declares. Never read another
+plugin's files or credentials, or call it directly. A broker write that
+times out may have gone through; check the destination before retrying.
+Declare `folder_write` for an export folder the listener picks. Use
+`own_account` only when the process owns its login, and say plainly where it
+keeps the credential. Never log credentials, stream URLs or resolution
+tickets.
+
+Test concurrent requests, malformed input, a closed pipe, timeouts,
+permission denial, startup and restart. Run a host test against the exact
+packaged executable in an isolated profile; a unit test of the JSON-RPC
+handler does not prove the sandbox can launch it.

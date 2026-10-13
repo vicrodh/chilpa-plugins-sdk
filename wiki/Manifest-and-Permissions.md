@@ -1,9 +1,8 @@
 # Manifest and permissions
 
-I put `manifest.json` next to the plugin binary. The host validates the
-whole manifest before loading it; unknown capability types fail instead of
-being ignored. This small WASM catalog example has no network, storage, or
-audio permission:
+`manifest.json` goes next to the plugin binary. The host validates all of it
+before loading; an unknown capability type is an error, not something to
+skip. This small WASM catalog asks for no network, storage or audio:
 
 ```json
 {
@@ -20,37 +19,37 @@ audio permission:
 }
 ```
 
-The required fields are `id`, `name`, `version`, `api_version`, and
-`kind`. The ID is at most 128 characters, lowercase ASCII letters, digits,
-dots and dashes, includes a dot, and has no leading, trailing, or doubled
-dot. `kind` is `source`, `metadata`, or `scrobbler`. `runtime` defaults
-to `wasm`; a native package explicitly sets `process`. I use
-`description` to explain the source and its account needs before approval.
-`delivers_audio` defaults to true, so I set it to false if I cannot
-resolve playable audio.
+Required: `id`, `name`, `version`, `api_version` and `kind`.
 
-| Permission in `capabilities` | I request it when |
+- `id`: up to 128 characters of lowercase ASCII letters, digits, dots and
+  dashes. It needs at least one dot, and no dot at the start, at the end or
+  doubled.
+- `kind`: `source`, `metadata` or `scrobbler`.
+- `runtime`: `wasm` by default; a native package sets `process`.
+- `description`: say what the source is and whether it needs an account.
+  The listener reads it before approving.
+- `delivers_audio`: true by default. Set it to false if the plugin cannot
+  resolve playable audio.
+
+| Permission in `capabilities` | Request it when |
 | --- | --- |
 | `network` with `domains` | A WASM host request or package artwork needs those exact hosts. |
-| `storage` | A WASM plugin uses `store_get`, `store_set`, or `cache::get`. |
-| `register_source`, `register_panel`, `register_command` | The plugin contributes those surfaces. |
-| `library_read`, `plugins_read`, `playlists_write` | A process plugin uses the corresponding host broker operation. |
-| `folder_write` | A process plugin writes into a folder explicitly selected for it. |
-| `own_account` | A process plugin handles its own authentication and credential. |
+| `storage` | A WASM plugin uses `store_get`, `store_set` or `cache::get`. |
+| `register_source`, `register_panel`, `register_command` | The plugin adds those surfaces. |
+| `library_read`, `plugins_read`, `playlists_write` | A process plugin uses the matching host broker operation. |
+| `folder_write` | A process plugin writes into a folder the listener picked for it. |
+| `own_account` | A process plugin handles its own login and credential. |
 
-The host also recognizes `guest_credentials` for its compatibility bridge;
-it is not a general WASM or process plugin permission. Domain permissions
-are host names, not URLs or wildcards. The bridge has its own explicit
-exception for `*`; I do not apply that exception to a new plugin.
+`domains` are host names, not URLs or wildcards. The host also knows
+`guest_credentials` and a `*` domain, both for its compatibility bridge;
+neither is available to a new plugin.
 
-I request only what the implementation uses. The installation approval
-records the runtime, kind, auth configuration, and permissions. A later
-change to those requests needs fresh approval. A version bump alone does not
-grant new access. `own_account` is different from enforced permissions:
-the plugin declares how it handles the credential, and Chilpa cannot inspect
-what a separate process does with it.
+Ask only for what the code uses. The install approval records the runtime,
+kind, auth configuration and permissions, and changing any of them needs a
+new approval; a version bump grants nothing. `own_account` is a declaration,
+not an enforced permission: the plugin says how it handles the credential,
+and Chilpa cannot see what a separate process does with it.
 
-The manifest `api_version` is currently 1. The process `initialize`
-`protocol` is also 1. Neither number is inferred from SDK Git tags. I
-read [Compatibility and testing](Compatibility-and-Testing.md) before
-changing a pin or a package.
+`api_version` is 1 and the process `protocol` is 1. Neither comes from the
+SDK's Git tags. Before changing a pin or a package, read
+[Compatibility and testing](Compatibility-and-Testing.md).
