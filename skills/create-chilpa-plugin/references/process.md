@@ -1,7 +1,8 @@
 # Process contract
 
 Set `"runtime": "process"` in `manifest.json` and package an executable
-named `plugin`. The host launches it only inside its Linux sandbox for now.
+named `plugin`. The host launches it inside Bubblewrap on Linux or Seatbelt on macOS.
+Build separate native packages for each advertised OS and architecture.
 It speaks JSON-RPC 2.0, one object per line on standard input and output.
 Diagnostics go to standard error, and every reply echoes its request's `id`.
 The host makes concurrent calls, so keep reading input while another call
@@ -10,8 +11,10 @@ waits.
 The first request is `initialize`. Answer with `protocol: 1` and only the
 capabilities whose methods work. That number is separate from the manifest's
 `api_version: 1` and from its permissions. The current host's greeting
-carries `/data`, `/cache`, the locale, the host identity and
-`playback_events: 1`.
+carries `data_dir`, `cache_dir`, the locale, the host identity and
+`playback_events: 1`. Use the supplied directories rather than hard-coding
+Linux paths; macOS supplies absolute private directories. See
+`wiki/Native-Plugins.md` for per-platform catalog packages and confinement limits.
 
 For a source, get `search` and `track.resolve` working against the host
 before adding optional contracts. In a `chilpa-plugins-sdk` checkout:

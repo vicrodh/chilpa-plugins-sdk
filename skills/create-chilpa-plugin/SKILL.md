@@ -34,7 +34,8 @@ Do not claim that merely having a catalog API grants streaming rights.
   tests, not its service-specific IDs or endpoints.
 - Read [references/process.md](references/process.md) when native code,
   a separate process, or self-managed account credentials are necessary.
-  The host currently starts process plugins only on Linux.
+  Current hosts start process plugins inside Bubblewrap on Linux or Seatbelt on macOS.
+  Build and test a separate package for each advertised OS and architecture.
 
 If a `chilpa-plugins-sdk` checkout is available, also read its current
 `wiki/` page for the selected runtime and its `docs/` contract for any

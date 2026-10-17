@@ -12,7 +12,7 @@ each plugin has its own repository: [Radio](https://github.com/vicrodh/chilpa-pg
 | Runtime | Interface | Use it when |
 | --- | --- | --- |
 | WASM | `chilpa-plugin-api` messages and `chilpa-plugin-sdk` exports | The host's HTTP, clock, log and storage calls are enough. |
-| Process | JSON-RPC 2.0, one object per line | You need native libraries or the plugin handles its own account. Chilpa runs these only in its Linux sandbox for now. |
+| Process | JSON-RPC 2.0, one object per line | You need native libraries or the plugin handles its own account. Chilpa confines these with Bubblewrap on Linux and Seatbelt on macOS. |
 
 Both use a `manifest.json` with `api_version: 1`. A process plugin also
 answers `protocol: 1` in `initialize`. The `protocol-4` Git tag is an SDK

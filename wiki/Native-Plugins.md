@@ -1,8 +1,8 @@
 # Native process plugins
 
 Write a process plugin when the WASM host calls fall short, for example when
-you need an existing native library. Chilpa runs these only in its Linux
-sandbox for now. The package holds `manifest.json` with
+you need an existing native library. Chilpa runs these inside a platform sandbox: Bubblewrap on Linux and
+Seatbelt on macOS. The package holds `manifest.json` with
 `"runtime": "process"` and an executable named `plugin`. Chilpa inspects
 and approves the package before the process starts.
 
@@ -15,7 +15,9 @@ makes concurrent calls, so keep reading input while a request waits on a
 service or on a `host.reply`.
 
 The first request is `initialize`. The host sends `protocol: 1`,
-`playback_events: 1`, its name and version, `/data`, `/cache` and a locale.
+`playback_events: 1`, its name and version, `data_dir`, `cache_dir` and a locale.
+Use the supplied directories: Linux maps them to `/data` and `/cache`;
+macOS supplies absolute private directories.
 Answer with `protocol: 1` and the capabilities you actually serve:
 
 ```json
@@ -56,10 +58,54 @@ Declare `own_account` only when the plugin really logs in and stores its own
 credential. Chilpa can neither verify that nor erase the credential. If
 Chilpa should own the login, use the manifest's `auth` field instead. Keep
 tokens, stream URLs and resolution tickets out of logs. Persistent data goes
-under the sandbox's `/data`, temporary data under `/cache`. Writing to a
+under the supplied `data_dir`, temporary data under `cache_dir`.
+The host also sets `CHILPA_PLUGIN_DATA_DIR` and `CHILPA_PLUGIN_CACHE_DIR`. Writing to a
 folder the listener picked needs `folder_write`; a path inside a request
 grants no access.
 
 Test concurrent requests, a closed pipe, timeouts, malformed input, a failed
 login, and the package installed in a clean Chilpa profile. Before relying
 on an optional method, check that the host you target implements it.
+
+## Platform packages
+
+I build the executable and every bundled dependency for the target OS and
+architecture. A native ZIP is not interchangeable between Linux and macOS.
+The current macOS distribution targets Apple Silicon (`macos-aarch64`);
+Windows process hosting is not implemented. On macOS I ship a Mach-O
+executable with its runtime libraries inside the package; a script cannot
+invoke a separate system interpreter under the worker policy. Older macOS host builds without
+the native sandbox cannot run these packages.
+
+An index entry keeps its top-level Linux `package` and `sha256` for older
+hosts and adds an optional platform map:
+
+```json
+"packages": {
+  "linux-x86_64": {"package": "https://example.org/plugin-linux.zip", "sha256": "<Linux SHA-256>"},
+  "macos-aarch64": {"package": "https://example.org/plugin-macos.zip", "sha256": "<macOS SHA-256>"}
+}
+```
+
+The host chooses `{OS}-{ARCH}` using Rust's platform names and verifies that
+package's SHA-256. A declared map without the current platform omits the plugin from the visible
+catalog and prevents staging it. An omitted map declares a portable package,
+such as a WASM ZIP. Native process plugins must declare every supported target
+in `packages`; never publish a platform-specific binary as portable. Protocol and manifest API versions remain 1.
+
+## macOS confinement
+
+I keep the package read-only and write only to my private data/cache or an
+explicitly approved export folder. The worker cannot fork or execute another
+program. The host clears inherited environment variables, limits descriptors
+and monitors physical memory. Disabling network access denies external
+connections; local-host networking remains available for local audio readers.
+Network-enabled native workers have direct networking, unlike WASM's
+host-mediated HTTP domain checks.
+
+The macOS implementation uses the system's `sandbox-exec` and Seatbelt
+profile interface. [Apple does not support custom Seatbelt profiles](https://developer.apple.com/forums/thread/661939) as a
+public API for third parties; compatibility must be tested on supported
+macOS releases. The host fails closed if confinement cannot start. I test
+the exact ZIP through the actual host installer, permission review and
+sandbox, in a temporary profile without a real account or audio device.
