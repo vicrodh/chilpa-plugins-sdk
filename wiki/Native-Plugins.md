@@ -67,6 +67,32 @@ Test concurrent requests, a closed pipe, timeouts, malformed input, a failed
 login, and the package installed in a clean Chilpa profile. Before relying
 on an optional method, check that the host you target implements it.
 
+## Native source example
+
+I use [chilpa-pg-spotify](https://github.com/vicrodh/chilpa-pg-spotify) as a
+complete source example. It implements the existing process contract without
+changing Chilpa core or embedding another player UI. Its README attributes
+the MIT-licensed Spotifast work by Carmine Paolino and records immutable
+upstream revisions and dependency licenses.
+
+| Contract | Implementation to read |
+| --- | --- |
+| Concurrent requests, initialization and typed errors | `src/main.rs`, `src/web_api.rs` |
+| Account-owned browser setup and callbacks | `src/auth.rs`, `src/callback.rs`, `src/wizard.rs` |
+| Search, pages, stable references and library snapshots | `src/catalog.rs`, `src/native_catalog.rs`, `src/snapshot.rs` |
+| Permission-checked playlist creation and track additions | `src/playlist_actions.rs` |
+| Source lyrics and direct audio resolution | `src/lyrics.rs`, `src/stream.rs` |
+| Executable protocol and exact-package host checks | `tests/test_protocol.py`, `tools/check-host-catalog`, `tools/check-macos-host` |
+
+I start with its account-free fixture and protocol tests before using a real
+account. Full playback requires Premium; the guided setup recommends a personal
+Client ID. Shared application quotas and private service endpoints can restrict
+features independently. Linux and macOS have separate release ZIPs, and the Mac
+package requires a host with native process support. I check the repository's
+validation report for the tested scope, including unverified live Mac playback.
+I adapt the contract and resource boundaries to my own source; I do not copy
+service credentials or assume its endpoints grant another plugin access.
+
 ## Platform packages
 
 I build the executable and every bundled dependency for the target OS and

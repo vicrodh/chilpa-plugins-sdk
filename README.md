@@ -5,7 +5,8 @@ test fixture for the host, the contracts for native plugins, and the wiki.
 The install catalog is [chilpa-plugins](https://github.com/vicrodh/chilpa-plugins);
 each plugin has its own repository: [Radio](https://github.com/vicrodh/chilpa-pg-radio),
 [Podcasts](https://github.com/vicrodh/chilpa-pg-podcasts) and
-[Playlist Import](https://github.com/vicrodh/chilpa-pg-playlist-import).
+[Playlist Import](https://github.com/vicrodh/chilpa-pg-playlist-import), and
+[Spotify](https://github.com/vicrodh/chilpa-pg-spotify).
 
 ## Two runtimes
 
@@ -42,6 +43,14 @@ because the WASM stream path cannot play them yet.
 [Podcasts](https://github.com/vicrodh/chilpa-pg-podcasts) needs no account
 either, but its directory calls are signed with a secret that Chilpa's proxy
 holds.
+
+For a native source, I use [Spotify](https://github.com/vicrodh/chilpa-pg-spotify)
+as a working example of concurrent JSON-RPC, account setup, catalog pages,
+playlist actions, lyrics and direct stream delivery. Its README credits
+Carmine Paolino's Spotifast, explains account storage and service restrictions,
+and documents Linux and macOS validation. The
+[native guide](wiki/Native-Plugins.md#native-source-example) maps the contracts
+to its implementation.
 
 ## Workspace
 
