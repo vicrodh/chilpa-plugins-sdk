@@ -44,8 +44,8 @@ because the WASM stream path cannot play them yet.
 either, but its directory calls are signed with a secret that Chilpa's proxy
 holds.
 
-For a native source, I use [Spotify](https://github.com/vicrodh/chilpa-pg-spotify)
-as a working example of concurrent JSON-RPC, account setup, catalog pages,
+[Spotify](https://github.com/vicrodh/chilpa-pg-spotify) is a native source
+example of concurrent JSON-RPC, account setup, catalog pages,
 playlist actions, lyrics and direct stream delivery. Its README credits
 Carmine Paolino's Spotifast, explains account storage and service restrictions,
 and documents Linux and macOS validation. The

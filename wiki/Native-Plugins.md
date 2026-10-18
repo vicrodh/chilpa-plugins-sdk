@@ -69,8 +69,8 @@ on an optional method, check that the host you target implements it.
 
 ## Native source example
 
-I use [chilpa-pg-spotify](https://github.com/vicrodh/chilpa-pg-spotify) as a
-complete source example. It implements the existing process contract without
+[chilpa-pg-spotify](https://github.com/vicrodh/chilpa-pg-spotify) is a complete
+source example. It implements the existing process contract without
 changing Chilpa core or embedding another player UI. Its README attributes
 the MIT-licensed Spotifast work by Carmine Paolino and records immutable
 upstream revisions and dependency licenses.
@@ -84,21 +84,21 @@ upstream revisions and dependency licenses.
 | Source lyrics and direct audio resolution | `src/lyrics.rs`, `src/stream.rs` |
 | Executable protocol and exact-package host checks | `tests/test_protocol.py`, `tools/check-host-catalog`, `tools/check-macos-host` |
 
-I start with its account-free fixture and protocol tests before using a real
+Start with its account-free fixture and protocol tests before using a real
 account. Full playback requires Premium; the guided setup recommends a personal
 Client ID. Shared application quotas and private service endpoints can restrict
 features independently. Linux and macOS have separate release ZIPs, and the Mac
-package requires a host with native process support. I check the repository's
+package requires a host with native process support. Check the repository's
 validation report for the tested scope, including unverified live Mac playback.
-I adapt the contract and resource boundaries to my own source; I do not copy
+Adapt the contract and resource boundaries to the new source. Do not copy
 service credentials or assume its endpoints grant another plugin access.
 
 ## Platform packages
 
-I build the executable and every bundled dependency for the target OS and
+Build the executable and every bundled dependency for the target OS and
 architecture. A native ZIP is not interchangeable between Linux and macOS.
 The current macOS distribution targets Apple Silicon (`macos-aarch64`);
-Windows process hosting is not implemented. On macOS I ship a Mach-O
+Windows process hosting is not implemented. On macOS, ship a Mach-O
 executable with its runtime libraries inside the package; a script cannot
 invoke a separate system interpreter under the worker policy. Older macOS host builds without
 the native sandbox cannot run these packages.
@@ -121,8 +121,8 @@ in `packages`; never publish a platform-specific binary as portable. Protocol an
 
 ## macOS confinement
 
-I keep the package read-only and write only to my private data/cache or an
-explicitly approved export folder. The worker cannot fork or execute another
+Treat the package as read-only. Write only to the plugin's private data/cache
+or an explicitly approved export folder. The worker cannot fork or execute another
 program. The host clears inherited environment variables, limits descriptors
 and monitors physical memory. Disabling network access denies external
 connections; local-host networking remains available for local audio readers.
@@ -132,6 +132,6 @@ host-mediated HTTP domain checks.
 The macOS implementation uses the system's `sandbox-exec` and Seatbelt
 profile interface. [Apple does not support custom Seatbelt profiles](https://developer.apple.com/forums/thread/661939) as a
 public API for third parties; compatibility must be tested on supported
-macOS releases. The host fails closed if confinement cannot start. I test
+macOS releases. The host fails closed if confinement cannot start. Test
 the exact ZIP through the actual host installer, permission review and
 sandbox, in a temporary profile without a real account or audio device.
