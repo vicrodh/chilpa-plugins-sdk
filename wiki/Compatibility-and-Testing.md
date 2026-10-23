@@ -17,8 +17,9 @@ host.
 
 ## Release checks
 
-1. Check the manifest against the current host's `Manifest::validate`: exact
-   ID, runtime, API version, domain hosts, auth and permissions.
+1. Check the manifest against the current host's
+   `Manifest::parse_for_runtime`: exact ID, runtime, API version, domain
+   hosts, auth and permissions.
 2. Run native unit tests for parsing, empty and hostile replies, stable IDs,
    pagination, unavailable content, and whatever retry behavior the plugin
    has.

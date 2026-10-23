@@ -44,8 +44,10 @@ plugin! {
 }
 ```
 
-The host asks only for what the manifest advertises. A source with audio
-also exports `chilpa_resolver` and returns a `Stream` for its own stable
+The manifest does not list operations: the host calls them by kind (every
+`source` is asked for `chilpa_search` and `chilpa_playlists`, for example)
+and treats a missing export as unsupported, so export only what you
+implement. A source with audio also exports `chilpa_resolver` and returns a `Stream` for its own stable
 `external_id`. Keep that ID the same through search, browse, queue and
 resolve. If the plugin cannot supply audio Chilpa can play, set
 `delivers_audio: false` or `playable: false`. A segmented HLS response can't

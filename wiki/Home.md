@@ -22,10 +22,11 @@ its own; the host makes those calls for it.
 
 **Process** speaks JSON-RPC 2.0 over standard input and output, one object
 per line. The host calls `initialize`, then methods such as `search`,
-`page.get` or `track.resolve`, depending on the capabilities the plugin
-advertises. Process plugins run in a platform sandbox, Bubblewrap on Linux
-and Seatbelt on macOS; Windows does not host them yet. The Rust SDK does not
-implement this interface.
+`page.get` or `track.resolve`. Some methods go to every process plugin
+whatever capabilities it advertised, so answer JSON-RPC error `-32601` at
+once for any method you do not implement. Process plugins run in a platform
+sandbox, Bubblewrap on Linux and Seatbelt on macOS; Windows does not host
+them yet. The Rust SDK does not implement this interface.
 
 Both are validated against `manifest.json`, with `api_version: 1`. A process
 plugin also answers `protocol: 1` in `initialize`. The `protocol-4` Git tag

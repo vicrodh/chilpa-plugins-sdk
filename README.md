@@ -3,9 +3,10 @@
 What you need to write a Chilpa plugin: the WASM protocol, the Rust SDK, a
 test fixture for the host, the contracts for native plugins, and the wiki.
 The install catalog is [chilpa-plugins](https://github.com/vicrodh/chilpa-plugins);
-each plugin has its own repository: [Radio](https://github.com/vicrodh/chilpa-pg-radio),
-[Podcasts](https://github.com/vicrodh/chilpa-pg-podcasts) and
-[Playlist Import](https://github.com/vicrodh/chilpa-pg-playlist-import), and
+each plugin has its own repository, for example
+[Radio](https://github.com/vicrodh/chilpa-pg-radio),
+[Podcasts](https://github.com/vicrodh/chilpa-pg-podcasts),
+[Playlist Import](https://github.com/vicrodh/chilpa-pg-playlist-import) and
 [Spotify](https://github.com/vicrodh/chilpa-pg-spotify).
 
 ## Two runtimes
