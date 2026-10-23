@@ -1,9 +1,10 @@
 # Chilpa plugin development
 
 Start here to write a Chilpa plugin. These pages are versioned with the SDK,
-under `wiki/`. The runtime and manifest guidance was last checked against
-Chilpa host `1cce7299` and SDK `protocol-4` on 2026-10-11. Optional process
-contracts need their own check against the host build you target.
+under `wiki/`. The wiki and the `docs/` contracts were last checked on
+2026-10-23 against Chilpa host `2d282abc` (branch `pre-launch`), which pins
+SDK tag `protocol-4` in `vendor/chilpa-plugin-api/ORIGIN.json`. Check the
+host build you target before relying on any of them.
 
 | You need | Read |
 | --- | --- |

@@ -67,7 +67,9 @@ to its implementation.
 
 Pin the SDK to a reviewed commit or tag, never to `main`. The host and the
 existing WASM plugins pin `protocol-4`; what came after it is the directory
-cache and documentation.
+cache and documentation. The host vendors `chilpa-plugin-api` at that tag,
+and its pin is in `vendor/chilpa-plugin-api/ORIGIN.json` in the Chilpa
+repository.
 
 ```sh
 cargo test --workspace                                       # SDK

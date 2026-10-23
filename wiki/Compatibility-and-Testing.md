@@ -8,8 +8,9 @@ Three numbers that are easy to mix up:
 | Process `initialize.protocol: 1` | The native JSON-RPC contract, negotiated at startup. |
 | SDK Git tag `protocol-4` | One source revision of the WASM API and SDK. |
 
-The host and the existing WASM plugins pin `protocol-4`. What came after
-that tag is the directory cache and these pages. A moving branch is not
+The host and the existing WASM plugins pin `protocol-4`; the host's pin is
+in `vendor/chilpa-plugin-api/ORIGIN.json`. What came after that tag is the
+directory cache and these pages. A moving branch is not
 assumed compatible with a released host. Before shipping, compare the host's
 `chilpa-plugin-api` pin with the plugin's SDK pin. A public message shape
 never changes under the same API version without testing old modules and the
