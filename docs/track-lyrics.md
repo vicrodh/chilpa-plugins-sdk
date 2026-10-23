@@ -27,9 +27,10 @@ Without it the host never calls the method.
 {"ref": "track:42", "language": "es"}
 ```
 
-`ref` is the same opaque reference `track.resolve` takes. `language` is
-optional and asks for a translation next to the original; a plugin without
-translations ignores it.
+`ref` is the same opaque reference `track.resolve` takes. `language` is the
+reader's language, the one chosen for lyrics or else the window's, and
+current hosts send it on every call. Treat it as a preference, not as a
+request: add a translation into it when you have one, ignore it otherwise.
 
 ### Found
 
@@ -82,8 +83,9 @@ keep the lyrics against the right recording: its length and its ISRC. Leave
 out what is unknown.
 
 Never answer with an address for the host to fetch. The plugin reads the
-lyrics itself, with its own session and inside its own allowed domains, and
-hands over the result. Answers larger than 512 KiB of text are not read.
+lyrics itself, with its own session, and hands over the result. An `lrc`,
+`ttml` or `plain` text over 512 KiB, or lyrics that leave no line once read,
+count as a failure, so the host asks again on the next play.
 
 ### None
 
@@ -92,7 +94,7 @@ hands over the result. Answers larger than 512 KiB of text are not read.
 ```
 
 Only when the service said so: the track has no lyrics there. The host
-remembers it for days and asks its lyrics service instead.
+remembers it for seven days and asks its lyrics service instead.
 
 ### Failure
 
@@ -105,12 +107,17 @@ pause (a 429 with `Retry-After`), pass it on:
 {"code": -32000, "message": "The service is busy", "data": {"retry_after_ms": 30000}}
 ```
 
+Current hosts ignore `retry_after_ms` from a source and ask again on the next
+play, so keep your own pause as well.
+
 ## What the host does
 
 - It calls `track.lyrics` and its lyrics service at the same time, so a
   plugin that answers `none` adds no wait. The plugin has 4 seconds.
 - Found lyrics are kept by plugin and reference, with the track they were
-  found for, and dropped when the plugin is removed.
+  found for, and are meant to be dropped when the plugin is removed. Current
+  hosts keep them after the plugin is removed, until they go unread for 180
+  days or the listener clears the lyrics cache.
 - Playback never waits for lyrics.
 - No credential of the plugin's account leaves the plugin: the lyrics
   service is asked with the track's names, length and identifiers only.

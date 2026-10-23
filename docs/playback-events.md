@@ -69,8 +69,7 @@ RPC error or any other response remains retryable; the host never changes the
 ticket to make a rejected start work. Persist resolution tickets with their
 account binding if delayed starts should survive a plugin restart.
 
-Plugins may also accept ordered notifications, but notifications have no
-acknowledgement and cannot support reliable delivery on their own.
+The host sends `playback.event` only as a request, never as a notification.
 
 The host bounds its queue and retains unacknowledged terminal events across
 restart. Backpressure, an unavailable plugin or a reporting failure must not
@@ -95,9 +94,10 @@ per occurrence; start reserves sequence zero. `played_ms` is a nonnegative
 integer in milliseconds and must never decrease within an occurrence.
 
 Optional diagnostic fields on `progress` are `state` (`playing`, `paused`,
-`buffering` or `seeking`) and `position_ms`. Neither contributes to listening
-time. Optional `reason` on `ended` is `finished`, `stopped`, `skipped`, `replaced`,
-`error` or `shutdown`. Plugins must tolerate unknown optional fields.
+`buffering` or `seeking`; current hosts never send `buffering`) and
+`position_ms`. Neither contributes to listening time. Optional `reason` on
+`ended` is `finished`, `stopped`, `skipped`, `replaced`, `error` or
+`shutdown`. Plugins must tolerate unknown optional fields.
 
 ```json
 {"kind":"progress","playback_id":"48058762-0bde-4c19-82c3-748ea8a1d354","sequence":1,"played_ms":12000,"position_ms":180000,"state":"paused"}
@@ -132,7 +132,9 @@ that duration for its provider.
 - On orderly shutdown, enqueue final events before stopping plugins. After a
   crash, recover only confirmed checkpoints, without counting offline wall time.
 - Preserve the resource's `preview` flag. The plugin decides whether previews
-  qualify; it must not report a preview as a full catalog stream.
+  qualify; it must not report a preview as a full catalog stream. Current
+  hosts ignore `preview` and `delivery`, so a plugin that serves previews
+  decides from its own ticket whether one counts.
 
 ## Plugin processing rules
 
@@ -195,9 +197,13 @@ must not depend on those optional fields to compute listening duration.
 ## Removing a source
 
 When the listener uninstalls a source, the host stops its process, cancels
-its pending playback reports, and removes its account data, private cache,
-integration preferences and queued tracks locally. The listener's account and
-playlists at the remote service are not touched.
+its pending playback reports, and removes the data and cache directories it
+supplied, any credential it holds for the plugin, its integration
+preferences and queued tracks. A credential the plugin keeps anywhere else is
+the plugin's to delete. Current hosts ask the plugin first only when the
+listener uninstalls from Settings, with a `chilpa_revoke` request and a
+2-second limit; the plugin list removes it without asking. The listener's
+account and playlists at the remote service are not touched.
 
 ## Receiver playback measurements
 

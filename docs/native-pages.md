@@ -5,7 +5,19 @@ WASM SDK. Check the target host's `pages` negotiation and `page.get`
 handling before advertising it. A new process plugin starts at the wiki's
 `Native-Plugins.md`.
 
-A plugin that supplies native pages advertises `capabilities.pages: true` in `initialize`. The host renders the documents with its album grids, artist portraits, track lists and navigation. References stay opaque to the host.
+A plugin that supplies native pages advertises `capabilities.pages: true` in
+`initialize`. The host renders the documents with its album grids, artist
+portraits, track lists and navigation. It passes references back as it
+received them, with these exceptions:
+
+- It builds its own keys from page references with spaces and `|`, so keep
+  both characters out of the references of pages and of the albums,
+  artists, labels and playlists that open them.
+- Track hearts work only on references that start with `track:`, and the
+  host compares them on the part before `@playlist:`.
+- Artist scenes accept only references that start with `artist:`.
+- When the listener adds tracks to one of the plugin's playlists, the host
+  sends each track reference up to its first `@`.
 
 `initialize` can also carry optional `capabilities.navigation` titles, in the
 requested locale, for example
@@ -28,7 +40,7 @@ and routes stay the same. A missing or empty title keeps the host's default.
 
 A listing returns `items` and an optional `next` reference instead of `shelves`. The host keeps each page in navigation history. Keep section IDs stable so the listener's visibility, order and size preferences survive content changes.
 
-Each item uses the same shape as `library.list`: `kind` (`album`, `artist`, `label`, `playlist` or `track`), `ref`, `title`, `image`, `artist`, `artist_ref`, `album_ref`, `year`, `duration_ms`, `genre`, `label`, `label_ref`, `release_date` and `quality` are optional except the item's identity. Track references may carry playback context; the plugin interprets and validates them, including for favorite and resolve operations. The host passes the whole reference back unchanged.
+Each item uses the same shape as `library.list`: `kind` (`album`, `artist`, `label`, `playlist` or `track`), `ref`, `title`, `image`, `artist`, `artist_ref`, `album_ref`, `year`, `duration_ms`, `genre`, `label`, `label_ref`, `release_date` and `quality` are optional except the item's identity. Track references may carry playback context after an `@`; the plugin interprets and validates them, including for favorite and resolve operations.
 
 An artist, label or spotlight page can have a `header` with item identity, image and description. A shelf can supply `extra_tracks` alongside its cards. Playlist shelves can supply `tags` (`id`, `slug`, `name`); each playlist carries its matching tags. The host filters these without replacing playlist identity.
 
@@ -50,7 +62,13 @@ Album metadata can include `credits`, `booklets` (`name`, `url`), `copyright`, `
 {"action":"pin","item":{"kind":"album","ref":"album:42","title":"Record"},"on":true}
 ```
 
-A successful action invalidates the relevant source library and personal pages. Errors remain visible in the source status. A plugin owns its pins and account data; uninstall removes them with its private data directory.
+Current hosts never send `pin`.
+
+After a successful `favorite` the host updates that item's heart and
+re-reads the plugin's library tabs without re-reading pages. After any other
+successful action it also marks every page of the plugin stale. Errors remain
+visible in the source status. A plugin owns its pins and account data;
+uninstall removes them with its private data directory.
 
 Playback history must come from the audible playback lifecycle, never from a catalog fetch or preloading. Use the [playback events contract](playback-events.md), count each playback ID once, and tie history to the account that resolved the stream.
 
