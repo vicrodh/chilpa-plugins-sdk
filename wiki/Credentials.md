@@ -48,7 +48,9 @@ session the service only grants its own client, declares it:
 ```
 
 Keep the credential in a file under the `data_dir` that `initialize`
-supplies (also in `CHILPA_PLUGIN_DATA_DIR`), readable only by the user.
+supplies, readable only by the user. On Linux that is `/data`, where `HOME`
+also points; on macOS it is a private absolute path, also in
+`CHILPA_PLUGIN_DATA_DIR`.
 That directory belongs to this plugin alone: on Linux the sandbox mounts only
 this plugin's data and cache directories, and on macOS the profile lets it
 read and write only those. Uninstalling the plugin deletes the directory and

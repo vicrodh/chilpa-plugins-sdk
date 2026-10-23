@@ -55,13 +55,15 @@ retry it blindly. Declare `plugins_read`, `library_read` or
 ## Accounts and files
 
 Declare `own_account` only when the plugin really logs in and stores its own
-credential. Chilpa can neither verify that nor erase the credential. If
-Chilpa should own the login, use the manifest's `auth` field instead. Keep
-tokens, stream URLs and resolution tickets out of logs. Persistent data goes
-under the supplied `data_dir`, temporary data under `cache_dir`.
-The host also sets `CHILPA_PLUGIN_DATA_DIR` and `CHILPA_PLUGIN_CACHE_DIR`. Writing to a
-folder the listener picked needs `folder_write`; a path inside a request
-grants no access. [Credentials](Credentials.md) says where an account
+credential; Chilpa cannot verify how it handles it. The manifest's `auth`
+field is for WASM plugins: the host adds that credential to WASM `http`
+requests, and a process plugin never receives it. Keep tokens, stream URLs
+and resolution tickets out of logs. Persistent data goes under the supplied
+`data_dir`, temporary data under `cache_dir`, and uninstalling deletes both.
+Linux maps them to `/data` and `/cache` and points `HOME` and
+`XDG_CACHE_HOME` at them; macOS also sets `CHILPA_PLUGIN_DATA_DIR` and
+`CHILPA_PLUGIN_CACHE_DIR`. Writing to a folder the listener picked needs
+`folder_write`; a path inside a request grants no access. [Credentials](Credentials.md) says where an account
 credential goes.
 
 Test concurrent requests, a closed pipe, timeouts, malformed input, a failed
