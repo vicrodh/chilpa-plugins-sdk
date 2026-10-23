@@ -19,7 +19,8 @@ host.
 
 1. Check the manifest against the current host's
    `Manifest::parse_for_runtime`: exact ID, runtime, API version, domain
-   hosts, auth and permissions.
+   hosts, auth and permissions. Check the ZIP and its catalog entry against
+   [Packages and catalog](Packages-and-Catalog.md).
 2. Run native unit tests for parsing, empty and hostile replies, stable IDs,
    pagination, unavailable content, and whatever retry behavior the plugin
    has.

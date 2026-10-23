@@ -3,4 +3,5 @@
 - [Native plugins](Native-Plugins.md)
 - [Manifest and permissions](Manifest-and-Permissions.md)
 - [Credentials](Credentials.md)
+- [Packages and catalog](Packages-and-Catalog.md)
 - [Compatibility and testing](Compatibility-and-Testing.md)

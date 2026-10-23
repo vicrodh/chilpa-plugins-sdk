@@ -11,6 +11,7 @@ contracts need their own check against the host build you target.
 | Native libraries, a process, or an account the plugin manages | [Native plugins](Native-Plugins.md) |
 | A valid package and a fair permission request | [Manifest and permissions](Manifest-and-Permissions.md) |
 | An account: where its credential lives | [Credentials](Credentials.md) |
+| A package and its catalog entry | [Packages and catalog](Packages-and-Catalog.md) |
 | Version pins, tests and release checks | [Compatibility and testing](Compatibility-and-Testing.md) |
 
 ## Two interfaces
@@ -34,11 +35,15 @@ is a source revision, neither of those numbers.
 
 ## Where the contracts are
 
-- WASM data shapes: `chilpa-plugin-api/src/lib.rs`.
-- WASM exports and host calls: `chilpa-plugin-sdk/src/`.
-- Test module: `fixture/`.
-- Process extensions: `docs/native-pages.md`, `docs/playback-events.md`,
-  `docs/plugin-cooperation.md` and `docs/track-lyrics.md`.
+- WASM data shapes: [`chilpa-plugin-api/src/lib.rs`](https://github.com/vicrodh/chilpa-plugins-sdk/blob/main/chilpa-plugin-api/src/lib.rs).
+- WASM exports and host calls: [`chilpa-plugin-sdk/src/`](https://github.com/vicrodh/chilpa-plugins-sdk/tree/main/chilpa-plugin-sdk/src).
+- Test module: [`fixture/`](https://github.com/vicrodh/chilpa-plugins-sdk/tree/main/fixture).
+- Process methods: [native source](https://github.com/vicrodh/chilpa-plugins-sdk/blob/main/docs/native-source.md),
+  [native pages](https://github.com/vicrodh/chilpa-plugins-sdk/blob/main/docs/native-pages.md),
+  [settings and downloads](https://github.com/vicrodh/chilpa-plugins-sdk/blob/main/docs/native-settings.md),
+  [playback events](https://github.com/vicrodh/chilpa-plugins-sdk/blob/main/docs/playback-events.md),
+  [plugin cooperation](https://github.com/vicrodh/chilpa-plugins-sdk/blob/main/docs/plugin-cooperation.md) and
+  [track lyrics](https://github.com/vicrodh/chilpa-plugins-sdk/blob/main/docs/track-lyrics.md).
 
 When a page and a host build disagree, the host is right and the page gets
 fixed. A plugin is ready when its package loads in Chilpa and every path it

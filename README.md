@@ -30,12 +30,16 @@ same review as the SDK.
 - [Native process plugins](wiki/Native-Plugins.md)
 - [Manifest and permissions](wiki/Manifest-and-Permissions.md)
 - [Credentials](wiki/Credentials.md)
+- [Packages and catalog](wiki/Packages-and-Catalog.md)
 - [Compatibility and testing](wiki/Compatibility-and-Testing.md)
 
-The process contracts go into detail: [catalog pages](docs/native-pages.md),
-[playback events](docs/playback-events.md), [plugin cooperation](docs/plugin-cooperation.md)
-and [lyrics of a source's own tracks](docs/track-lyrics.md). None of them
-adds a WASM export.
+The process contracts go into detail: [source methods](docs/native-source.md),
+[catalog pages](docs/native-pages.md),
+[settings and downloads](docs/native-settings.md),
+[playback events](docs/playback-events.md),
+[plugin cooperation](docs/plugin-cooperation.md) and
+[lyrics of a source's own tracks](docs/track-lyrics.md). None of them adds a
+WASM export.
 
 After `hello-source`, read [Radio](https://github.com/vicrodh/chilpa-pg-radio):
 a real source with no account. It searches and browses a public station
