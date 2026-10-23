@@ -18,50 +18,63 @@ Find the service's current official API and terms, inspect the target host's
 implemented contracts, and write a small feature plan. Choose the smallest
 useful source: discovery and browsing first; add playable audio only when a
 supported stream can actually be resolved. Prefer public endpoints and
-account-free paths when they satisfy the request. If auth is required, map
-credential ownership and storage before coding. When a necessary service
-capability or target host contract is unknown, research it and state the
-remaining uncertainty; ask only for a product choice that cannot be inferred.
-Do not claim that merely having a catalog API grants streaming rights.
+account-free paths when they satisfy the request. If an account is required,
+decide where its credential lives, following the SDK's `wiki/Credentials.md`,
+before coding. When a necessary service capability or target host contract
+is unknown, research it and state the remaining uncertainty; ask only for a
+product choice that cannot be inferred. Do not claim that merely having a
+catalog API grants streaming rights.
 
 ## Choose the interface
 
 - Read [references/wasm.md](references/wasm.md) for a plugin that can use
-  host-mediated HTTP, storage, clock, and logging. Start from the SDK's
+  host-mediated HTTP, storage, clock and logging. Start from the SDK's
   `examples/hello-source` for a catalog-only source or `fixture` for
-  search, browsing, and resolution. For a real account-free source, inspect
+  search, browsing and resolution. For a real account-free source, inspect
   the public Radio plugin linked in that reference; adapt its contract and
   tests, not its service-specific IDs or endpoints.
-- Read [references/process.md](references/process.md) when native code,
-  a separate process, or self-managed account credentials are necessary.
-  Current hosts start process plugins inside Bubblewrap on Linux or Seatbelt on macOS.
-  Build and test a separate package for each advertised OS and architecture.
+- Read [references/process.md](references/process.md) when native code, a
+  separate process, or self-managed account credentials are necessary.
+  Current hosts start process plugins inside Bubblewrap on Linux or Seatbelt
+  on macOS, and not on Windows. Build and test a separate package for each
+  advertised OS and architecture.
 
-If a `chilpa-plugins-sdk` checkout is available, also read its current
-`wiki/` page for the selected runtime and its `docs/` contract for any
-optional process feature. Check the target Chilpa host code or pinned
-version before claiming a feature works. Do not turn a design document
-into an advertised capability without host evidence.
+With a `chilpa-plugins-sdk` checkout, read its `wiki/` page for the selected
+runtime, `wiki/Manifest-and-Permissions.md`, `wiki/Credentials.md` and
+`wiki/Packages-and-Catalog.md`, and the `docs/` contract for each process
+feature. The pages record the host revision they were checked against.
+
+**Check the target host's code before advertising a capability or relying
+on a method.** Read where the host reads that capability and where it calls
+the method, at the host revision you target, and match its types and time
+limits. Do not turn a design document or an SDK page into an advertised
+capability without that evidence.
 
 ## Guardrails
 
 1. Pin the plugin to a reviewed immutable SDK commit or tag and check the
-   target host's pin. Keep manifest `api_version`, process `protocol`,
-   and Git tag names distinct.
-2. Request only manifest permissions the implementation uses. Check
-   network hosts, storage, account ownership, selected folders, and
-   cross-plugin access against the target host's manifest validator.
-   Do not add wildcard network access for an ordinary plugin.
-3. Preserve stable opaque IDs from discovery through later operations.
-   Mark audio unavailable when a stream cannot actually be resolved
-   through the supported delivery path.
-4. Keep credentials, stream URLs, resolution tickets, and private data out
-   of logs and test output. A process plugin with `own_account` must
-   explain where it keeps credentials; Chilpa cannot enforce that claim.
+   target host's pin. Keep manifest `api_version`, process `protocol`, and
+   Git tag names distinct.
+2. Request only manifest permissions the implementation uses, and check
+   them against the target host's manifest validator. WASM domains also
+   allow their subdomains; a process plugin with any domain gets direct
+   network access. Do not add wildcard network access.
+3. Preserve stable opaque IDs from discovery through later operations and
+   follow the host's reference conventions in `docs/native-pages.md`. Mark
+   audio unavailable when a stream cannot actually be resolved through the
+   supported delivery path.
+4. Keep credentials, stream URLs, resolution tickets and private data out of
+   logs and test output. Never keep a secret in the WASM store. A process
+   plugin with `own_account` says where it keeps the credential; neither
+   sandbox opens the system keyring today.
 5. Test the implemented behavior with malformed and empty replies,
    permission denial, timeouts, and restart or replacement where relevant.
    Compile the target artifact and load that exact package in an isolated
    Chilpa profile. Report any integration check that could not run.
+
+If the plugin will be listed in the third-party catalog, follow the rules in
+https://github.com/vicrodh/chilpa-3rd-party-plugins/blob/main/CONTRIBUTING.md
+and check its entry against `wiki/Packages-and-Catalog.md`.
 
 Produce the plugin, its manifest, meaningful tests, and build or package
 instructions. Report the selected runtime, requested permissions, SDK and
