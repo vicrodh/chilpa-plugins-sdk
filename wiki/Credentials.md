@@ -36,7 +36,9 @@ there is no keyring. The sealed file sits in the plugin's folder, outside its
 store, and no host call returns it. The host adds it to the plugin's `http`
 requests, renews an expired OAuth token before sending, and deletes it when
 the listener disconnects the account, withdraws the plugin's approval or
-uninstalls it.
+uninstalls it. Current hosts keep the sealed credential when the listener
+switches the plugin off in the plugin list, which also withdraws its
+approval.
 
 ## The plugin keeps it: `own_account`
 
