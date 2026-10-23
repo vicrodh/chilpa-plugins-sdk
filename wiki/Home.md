@@ -10,6 +10,7 @@ contracts need their own check against the host build you target.
 | A small, sandboxed source | [WASM quickstart](WASM-Quickstart.md) |
 | Native libraries, a process, or an account the plugin manages | [Native plugins](Native-Plugins.md) |
 | A valid package and a fair permission request | [Manifest and permissions](Manifest-and-Permissions.md) |
+| An account: where its credential lives | [Credentials](Credentials.md) |
 | Version pins, tests and release checks | [Compatibility and testing](Compatibility-and-Testing.md) |
 
 ## Two interfaces

@@ -2,4 +2,5 @@
 - [WASM quickstart](WASM-Quickstart.md)
 - [Native plugins](Native-Plugins.md)
 - [Manifest and permissions](Manifest-and-Permissions.md)
+- [Credentials](Credentials.md)
 - [Compatibility and testing](Compatibility-and-Testing.md)

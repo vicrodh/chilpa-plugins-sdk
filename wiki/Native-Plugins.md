@@ -61,7 +61,8 @@ tokens, stream URLs and resolution tickets out of logs. Persistent data goes
 under the supplied `data_dir`, temporary data under `cache_dir`.
 The host also sets `CHILPA_PLUGIN_DATA_DIR` and `CHILPA_PLUGIN_CACHE_DIR`. Writing to a
 folder the listener picked needs `folder_write`; a path inside a request
-grants no access.
+grants no access. [Credentials](Credentials.md) says where an account
+credential goes.
 
 Test concurrent requests, a closed pipe, timeouts, malformed input, a failed
 login, and the package installed in a clean Chilpa profile. Before relying

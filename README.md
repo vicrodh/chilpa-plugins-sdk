@@ -28,6 +28,7 @@ same review as the SDK.
   [example](examples/hello-source/)
 - [Native process plugins](wiki/Native-Plugins.md)
 - [Manifest and permissions](wiki/Manifest-and-Permissions.md)
+- [Credentials](wiki/Credentials.md)
 - [Compatibility and testing](wiki/Compatibility-and-Testing.md)
 
 The process contracts go into detail: [catalog pages](docs/native-pages.md),
