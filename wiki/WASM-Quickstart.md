@@ -44,21 +44,57 @@ plugin! {
 }
 ```
 
-The manifest does not list operations: the host calls them by kind (every
-`source` is asked for `chilpa_search` and `chilpa_playlists`, for example)
-and treats a missing export as unsupported, so export only what you
-implement. A source with audio also exports `chilpa_resolver` and returns a `Stream` for its own stable
-`external_id`. Keep that ID the same through search, browse, queue and
-resolve. If the plugin cannot supply audio Chilpa can play, set
+The manifest does not list operations. The host calls them by kind and
+treats a missing export as unsupported, so export only what you implement.
+For a `source` it calls `chilpa_search` on every global search,
+`chilpa_browse` when the listener opens the source, `chilpa_playlists` at
+most every five minutes (a plugin without that export is not asked again
+until it reloads), `chilpa_playlist_tracks` when a list opens, and
+`chilpa_resolver` to play. Uninstalling from Settings first sends
+`chilpa_revoke`.
+
+A source with audio exports `chilpa_resolver` and returns a `Stream` for its
+own stable `external_id`. Keep that ID the same through search, browse,
+queue and resolve. If the plugin cannot supply audio Chilpa can play, set
 `delivers_audio: false` or `playable: false`. A segmented HLS response can't
 be played through the WASM `Stream` API yet.
 
+## Host calls
+
 The SDK's `host` module provides `http`, `get`, `now`, `log`, `store_get`
-and `store_set`, all through the host. Declare `network` for every HTTP
-domain and `storage` before touching the store. Every WASM call gets a fresh
-instance, so Rust statics do not survive between calls. `cache::get` keeps a
-bounded directory cache and request budget in the store, so it also needs
-`storage`. Don't use it for account or audio responses.
+and `store_set`, all through the host. Every WASM call gets a fresh
+instance, so Rust statics do not survive between calls. Declare `storage`
+before touching the store; without it reads find nothing and writes fail.
+`cache::get` keeps a bounded directory cache and request budget in the
+store, so it also needs `storage`. Don't use it for account or audio
+responses.
+
+Declare `network` for every HTTP domain: a request may go to a declared host
+or one of its subdomains, over `http` or `https`. The host drops any
+`Authorization` header the plugin sets and adds `User-Agent: Chilpa`. A
+reply is text of at most 8 MiB that arrives within 20 seconds; anything else,
+an undeclared domain or offline mode comes back as `Err`. A status that is
+not 2xx is still a `Response`.
+
+A plugin whose service needs an account declares `auth` in its manifest, as
+an API token the listener pastes or OAuth 2.0 that Chilpa runs. The plugin
+never sees the credential: the host adds it to every request the plugin
+makes, so declare only hosts that should receive it.
+[Credentials](Credentials.md) has the details.
+
+## Limits
+
+| Calls | Wall clock | Fuel | Memory |
+| --- | --- | --- | --- |
+| `chilpa_browse`, `chilpa_search`, `chilpa_resolver` before playback | 45 s | 10⁹ | 32 MiB |
+| `chilpa_playlists`, `chilpa_playlist_tracks`, `chilpa_revoke`, `chilpa_dsp_presets`, resolving a search result | 2 s | 5×10⁷ | 8 MiB |
+| Any other call | 5 s | 10⁹ | 32 MiB |
+
+The wall clock includes the time the host spends on the plugin's HTTP
+requests. An `Err` from an operation, or a missing export, is an answer.
+Breaking a limit, trapping or not answering is a failure. Three failures in
+a row within a minute put the plugin in quarantine until the listener
+restarts it; a successful call clears the count.
 
 ## Test and package
 
@@ -81,7 +117,9 @@ script with your crate's path. The build uses the release profile and writes
 `plugin.wasm` plus a copy of `manifest.json`. `install-dev` copies the result
 into a development data home; use an isolated one for host tests.
 
-Native `cargo test` does not check the WASM ABI. Also build the WASM target,
-load the package in Chilpa and run every operation it declares. Then read
-[Compatibility and testing](Compatibility-and-Testing.md) before calling it
-ready.
+Native `cargo test` does not check the WASM ABI, and the fake host does not
+apply the real one's rules: `store_set` always succeeds, with no size or key
+limits, and a recorded URL is served whatever the manifest declares. Also
+build the WASM target, load the package in Chilpa and run every operation it
+declares. Then read [Compatibility and testing](Compatibility-and-Testing.md)
+before calling it ready.
