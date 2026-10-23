@@ -194,20 +194,6 @@ executable with its runtime libraries inside the package; a script cannot
 invoke a separate system interpreter under the worker policy. Older macOS
 host builds without the native sandbox cannot run these packages.
 
-An index entry keeps its top-level Linux `package` and `sha256` for older
-hosts and adds an optional platform map:
-
-```json
-"packages": {
-  "linux-x86_64": {"package": "https://example.org/plugin-linux.zip", "sha256": "<Linux SHA-256>"},
-  "macos-aarch64": {"package": "https://example.org/plugin-macos.zip", "sha256": "<macOS SHA-256>"}
-}
-```
-
-The host chooses `{OS}-{ARCH}` using Rust's platform names and verifies that
-package's SHA-256. A declared map without the current platform omits the
-plugin from the visible catalog and prevents staging it. An omitted map
-declares a portable package, such as a WASM ZIP. Native process plugins must
-declare every supported target in `packages`; never publish a
-platform-specific binary as portable. Protocol and manifest API versions
-remain 1.
+Publish one ZIP per target and list each under `packages` in the catalog
+entry, as [Packages and catalog](Packages-and-Catalog.md) describes.
+Protocol and manifest API versions remain 1.
