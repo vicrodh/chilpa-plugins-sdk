@@ -123,10 +123,10 @@ play, so keep your own pause as well.
 
 - It calls `track.lyrics` and its lyrics service at the same time, so a
   plugin that answers `none` adds no wait. The plugin has 4 seconds.
-- Found lyrics are kept by plugin and reference, with the track they were
-  found for, and are meant to be dropped when the plugin is removed. Current
-  hosts keep them after the plugin is removed, until they go unread for 180
-  days or the listener clears the lyrics cache.
+- Found lyrics are kept by plugin, reference and language, with the track
+  they were found for, and are meant to be dropped when the plugin is
+  removed. Current hosts keep them after the plugin is removed, until they go
+  unread for 180 days or the listener clears the lyrics cache.
 - Playback never waits for lyrics.
 - No credential of the plugin's account leaves the plugin: the lyrics
   service is asked with the track's names, length and identifiers only.

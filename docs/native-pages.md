@@ -100,8 +100,8 @@ Playback history must come from the audible playback lifecycle, never from a cat
 ## Artist scenes
 
 When the listener asks an artist scene to include plugins, the host uses the
-sources that advertise `search: true` and `pages: true` and a
-`scene_search_limit` above zero. For each candidate artist from MusicBrainz,
+sources that advertise `search: true` and `pages: true` and do not set
+`scene_search_limit` to 0. For each candidate artist from MusicBrainz,
 within that budget, it sends `search({"text":"<name>","limit":5})` and keeps
 the artists whose `ref` starts with `artist:` and whose `title` matches the
 name. When several match, it reads each with `page.get({"ref":"<artist>"})`

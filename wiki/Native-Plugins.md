@@ -40,8 +40,8 @@ next to the results, so a source that does not search answers empty lists.
 ## Initialize
 
 The first request is `initialize`. Answer within 15 seconds with
-`protocol: 1` and the capabilities you actually serve. Another protocol
-number, or no answer in time, and the plugin does not start.
+`protocol: 1` and the capabilities you actually serve. With another
+protocol number, or no answer in time, the plugin does not start.
 
 ```json
 {"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocol":1,"playback_events":1,"host":{"name":"chilpa","version":"0.1.0"},"data_dir":"/data","cache_dir":"/cache","locale":"en","network":{"enabled":true}}}

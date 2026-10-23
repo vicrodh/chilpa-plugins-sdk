@@ -34,7 +34,8 @@ registration is not complete yet.
 
 The host runs at most 16 broker requests at once, outside the UI and plugin
 registry locks, and answers a seventeenth with a busy error. Catalog calls
-time out after 30 seconds. A timed-out write is **uncertain**, not permission to retry: the remote service may already have changed.
+time out after 30 seconds. A timed-out write is **uncertain**, not
+permission to retry: the remote service may already have changed.
 
 | Operation | Permission | Input and result |
 | --- | --- | --- |

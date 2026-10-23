@@ -26,9 +26,10 @@ its own; the host makes those calls for it.
 per line. The host calls `initialize`, then methods such as `search`,
 `page.get` or `track.resolve`. Some methods go to every process plugin
 whatever capabilities it advertised, so answer JSON-RPC error `-32601` at
-once for any method you do not implement. Process plugins run in a platform
-sandbox, Bubblewrap on Linux and Seatbelt on macOS; Windows does not host
-them yet. The Rust SDK does not implement this interface.
+once for any method you do not implement; [Native plugins](Native-Plugins.md)
+gives the one exception. Process plugins run in a platform sandbox,
+Bubblewrap on Linux and Seatbelt on macOS; Windows does not host them yet.
+The Rust SDK does not implement this interface.
 
 Both are validated against `manifest.json`, with `api_version: 1`. A process
 plugin also answers `protocol: 1` in `initialize`. The `protocol-4` Git tag
