@@ -19,7 +19,9 @@ however finely that is timed. They are for exactly that track.
 {"protocol": 1, "capabilities": {"track_lyrics": 1}}
 ```
 
-Without it the host never calls the method.
+The value must be the number 1; `true` leaves it off. Without it the host
+never calls the method, and with it the host still skips the call in
+offline mode or when lyrics are turned off in its network settings.
 
 ## `track.lyrics`
 
@@ -69,6 +71,13 @@ A `document` is:
   "credits": [{"name": "A Writer", "role": "songwriter"}]
 }
 ```
+
+`schema`, `timing` and `lines` are required; `timing` is `unsynced`,
+`line`, `word` or `syllable`. Each line needs `text`, and each segment
+`text`, `start_ms` and `space_after`. A layer's `kind` is `translation` or
+`romanization`, with `language` and `lines` that point at lines by index. A
+credit's `role` is `lyricist`, `composer` or `songwriter`. A `document` has
+no size limit of its own.
 
 Times are milliseconds from the start of the track. What the service does
 not state is left out, never sent as zero: an unknown `end_ms` is absent. A

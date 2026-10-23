@@ -3,7 +3,8 @@
 This contract is for JSON-RPC process plugins; it adds no exports to the Rust
 WASM SDK. Check the target host's `pages` negotiation and `page.get`
 handling before advertising it. A new process plugin starts at the wiki's
-`Native-Plugins.md`.
+[Native plugins](../wiki/Native-Plugins.md) page; the methods that are not
+about pages are in [native source](native-source.md).
 
 A plugin that supplies native pages advertises `capabilities.pages: true` in
 `initialize`. The host renders the documents with its album grids, artist
@@ -21,8 +22,10 @@ received them, with these exceptions:
 
 `initialize` can also carry optional `capabilities.navigation` titles, in the
 requested locale, for example
-`{"discover":"Music","library":"Collection","albums":"Albums"}`. Section IDs
-and routes stay the same. A missing or empty title keeps the host's default.
+`{"discover":"Music","library":"Collection","albums":"Albums"}`. The keys are
+`discover`, `library`, `albums`, `tracks`, `artists`, `labels` and
+`playlists`. Section IDs and routes stay the same. A missing or empty title
+keeps the host's default.
 
 `page.get({"ref":"<reference>","refresh":false})` returns a document:
 
@@ -40,9 +43,23 @@ and routes stay the same. A missing or empty title keeps the host's default.
 
 A listing returns `items` and an optional `next` reference instead of `shelves`. The host keeps each page in navigation history. Keep section IDs stable so the listener's visibility, order and size preferences survive content changes.
 
-Each item uses the same shape as `library.list`: `kind` (`album`, `artist`, `label`, `playlist` or `track`), `ref`, `title`, `image`, `artist`, `artist_ref`, `album_ref`, `year`, `duration_ms`, `genre`, `label`, `label_ref`, `release_date` and `quality` are optional except the item's identity. Track references may carry playback context after an `@`; the plugin interprets and validates them, including for favorite and resolve operations.
+The source opens on `page.get({"ref":"discover:home","refresh":false})`. A
+shelf's `more` reference comes back as `page.get({"ref":"<more>"})`, answered
+with a listing. The host waits 90 seconds for a page and 60 for more of a
+shelf, and does not read the same page again within 30 seconds. `refresh` is
+true when it reads a page again after an action or a retry marked it stale.
+
+Items have the shape described in [native source](native-source.md#items): `kind` and `ref` identify one, and `title`, `image`, `artist`, `artist_ref`, `album_ref`, `year`, `duration_ms`, `genre`, `label`, `label_ref`, `release_date`, `quality` and the rest are optional. Track references may carry playback context after an `@`; the plugin interprets and validates them, including for favorite and resolve operations.
 
 An artist, label or spotlight page can have a `header` with item identity, image and description. A shelf can supply `extra_tracks` alongside its cards. Playlist shelves can supply `tags` (`id`, `slug`, `name`); each playlist carries its matching tags. The host filters these without replacing playlist identity.
+
+A shelf with `kind: "mixed"` holds cards of several kinds in the order of its
+`items`, and each card keeps its own kind, so an artist opens the artist.
+Tracks beside the cards go in `extra_tracks`. A shelf's `header` item becomes
+a card the listener can act on, like a library card. When one shelf replaces
+older ones, list their IDs in `previous_ids`: the listener's order, size and
+visibility carry over, a preference saved for the new ID wins, and the shelf
+stays visible if any older one was.
 
 When the provider advertises high-resolution lossless audio without the exact
 resolution, catalog quality is `quality: {"codec":"flac","tier":"hi_res"}`.
@@ -64,6 +81,14 @@ Album metadata can include `credits`, `booklets` (`name`, `url`), `copyright`, `
 
 Current hosts never send `pin`.
 
+The window sends `page.action` only to a plugin with `pages: true`, except
+`playlist.*` actions to one with `playlist_edit: true`. It waits for one
+action per plugin at a time, up to 30 seconds. An action may also carry the
+window's `request_id`, which the plugin can ignore. When the listener removes
+a saved playlist, the host sends `playlist.delete` if the list is the
+listener's own and editable or the plugin advertises `playlist_remove: true`,
+and `{"action":"favorite","ref":"<playlist>","on":false}` otherwise.
+
 After a successful `favorite` the host updates that item's heart and
 re-reads the plugin's library tabs without re-reading pages. After any other
 successful action it also marks every page of the plugin stale. Errors remain
@@ -71,6 +96,21 @@ visible in the source status. A plugin owns its pins and account data;
 uninstall removes them with its private data directory.
 
 Playback history must come from the audible playback lifecycle, never from a catalog fetch or preloading. Use the [playback events contract](playback-events.md), count each playback ID once, and tie history to the account that resolved the stream.
+
+## Artist scenes
+
+When the listener asks an artist scene to include plugins, the host uses the
+sources that advertise `search: true` and `pages: true` and a
+`scene_search_limit` above zero. For each candidate artist from MusicBrainz,
+within that budget, it sends `search({"text":"<name>","limit":5})` and keeps
+the artists whose `ref` starts with `artist:` and whose `title` matches the
+name. When several match, it reads each with `page.get({"ref":"<artist>"})`
+and compares up to two ISRCs against MusicBrainz credits. They come from a
+shelf with `id` `tracks` or `top-songs` and `kind: "track"`, whose items
+carry `isrc` and an `artist_ref` equal to that artist. A timeout, a closed
+channel, or an error with code `-32001`, `data.terminal: true`,
+`data.retry_after_ms` or `data.status` 401, 403 or 429 spends the rest of the
+source's budget for that scene.
 
 ## Availability
 
@@ -93,7 +133,8 @@ use a retry cooldown; an explicit refresh may retry immediately.
 ```
 
 The gain is a finite number in dB ready for the host's normalization stage;
-peak is an optional positive finite linear amplitude. The plugin maps its
+peak is an optional positive finite linear amplitude. The host reads only
+`gain_db` and `peak`; `source` and `scope` are informative. The plugin maps its
 provider's units and reference into this contract. A gain of zero is present
 data, not a missing value.
 
@@ -153,7 +194,8 @@ sources. When a source is disabled, its identity and metadata are kept, and
 unavailable tracks stay in place.
 
 `playlist.create` returns `item.ref` or `ref` naming the created playlist. The host
-can then call `playlist.add` in batches, waiting for each acknowledgement. A partial
+can then call `playlist.add` in batches of up to 100 tracks, waiting for each
+acknowledgement; the broker writes batches of up to 50. A partial
 failure identifies that the playlist already exists instead of creating another one.
 Local folders, sidebar visibility and ordering belong to the host; moving a source
 playlist into a local folder never moves or copies it in the remote account.
@@ -176,7 +218,13 @@ from local folders, including empty folders. Its create and move dialogs label
 local and native destinations explicitly. Local placement remains a sidebar
 preference and does not change remote membership.
 
-The plugin handles `page.action` with `folder.create` (`title`, `parent`),
+Reading account folders does not imply permission to change them. Advertise
+`folder_edit: false` for read-only folders, or `true` once their writes work;
+without it the host follows `playlist_edit`. Read-only folders stay visible,
+and the window does not offer to change them. `folder_icon` in the manifest
+gives these folders their artwork.
+
+When folder editing is supported, the plugin handles `page.action` with `folder.create` (`title`, `parent`),
 `folder.rename` (`ref`, `title`), and `playlist.folder` (`ref`, `folder`). Each
 write waits for acknowledgement and propagates failures to the open dialog.
 A successful move clears any local placement and reloads the source collection.
@@ -199,8 +247,11 @@ cache the result. Missing values stay missing; a catalog tier never invents
 bit depth or sample rate. The codec names what the plugin delivers to Chilpa,
 including a lossless container conversion when applicable.
 
-The host limits concurrent requests to two, backs off after failures, and
-updates the shared track cache, album header and playlist rows without playback.
+The host limits concurrent requests to two and waits 20 seconds for each. It
+skips a track whose rate and bit depth it already knows (rate alone for
+`aac`, `mp3` and `m4a`), asks about the same track at most every five minutes, and after an
+error leaves the plugin alone for a minute. It updates the shared track
+cache, album header and playlist rows without playback.
 Catalog refreshes with incomplete quality retain known technical values. Actual
 decoder measurements can still correct them. The album header uses the highest
 known track resolution while the list preserves each track's individual format.

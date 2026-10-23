@@ -19,7 +19,8 @@ A plugin advertises support in its `initialize` result:
 {"protocol":1,"capabilities":{"playback_events":1}}
 ```
 
-A supporting host includes `playback_events: 1` in its `initialize` parameters.
+The value must be the number 1; `true` leaves reporting off. A supporting
+host includes `playback_events: 1` in its `initialize` parameters.
 Without that host capability, the plugin must not infer playback from requests
 for metadata, URL resolution, a preload, a download or network activity.
 
@@ -29,6 +30,7 @@ A successful `track.resolve` result includes an opaque `resolution_id`:
 {"url":"https://audio.example/stream","resolution_id":"opaque-ticket","delivery":"direct","preview":false}
 ```
 
+Only a non-empty `resolution_id` of at most 128 characters starts reporting.
 The host retains that ticket with the exact resolved resource, including a
 resource resolved ahead of time. It does not substitute the last ticket for the
 same track. The plugin associates the ticket with the actual returned format,
@@ -54,7 +56,10 @@ A JSON-RPC request ID identifies one transport call; it is not a playback ID.
 {"jsonrpc":"2.0","id":41,"result":{"accepted":true}}
 ```
 
-`accepted` means the plugin has accepted the event into durable local state.
+Each request has 2 seconds. Without `accepted: true` or a discard in that
+time, the host sends the same request again 5 seconds later, so persist the
+event, acknowledge it, and upload it later. `accepted` means the plugin has
+accepted the event into durable local state.
 It does not mean an upstream service has accepted a report or counted a listen.
 A plugin can cancel an obsolete occurrence explicitly:
 
@@ -86,6 +91,11 @@ plugin's privacy policy.
 | `started` | `playback_id`, `resolution_id` | The first audio from this occurrence reached the active output. |
 | `progress` | `playback_id`, `sequence`, `played_ms` | A checkpoint of cumulative audio actually reproduced. |
 | `ended` | `playback_id`, `sequence`, `played_ms` | The occurrence ended, including interruption or failure after starting. |
+
+`progress` and `ended` also carry `observed_at_ms`, the host's Unix time in
+milliseconds when it took the measurement, and `started` carries
+`position_ms`, where the occurrence began. Optional fields without a value
+arrive as `null`, for example `reason` on `progress`.
 
 `started_at`, when supplied on `started`, is UTC Unix seconds at the actual
 start. Otherwise the plugin uses receipt time. Supply it when queuing or
@@ -172,7 +182,8 @@ credentials. The audio thread only updates bounded memory. A worker persists
 requests before delivery, requires `accepted: true`, and retries the exact
 unacknowledged request after five seconds. Later progress may be coalesced;
 starts and final events remain ordered per occurrence. When admission is full,
-reporting yields to audio; existing pending terminal events are retained.
+reporting yields to audio: a new occurrence that finds 1,024 pending is not
+reported at all, and existing pending terminal events are retained.
 
 A live occurrence checkpoints each additional second of measured audio and on
 observed pause/seek transitions. Updates depend on the render loop sampling
@@ -187,7 +198,8 @@ checkpoint and `reason: shutdown`. An orderly shutdown stops and joins the
 player before waiting up to three seconds for local persistence. Upstream
 provider delivery remains the plugin's responsibility. A crash can lose samples
 not yet checkpointed; it never adds offline wall time. If saved state is corrupt,
-reporting stays disabled and preserves that file for recovery.
+cannot be read or holds more than 1,024 occurrences, reporting stays disabled
+for the session and preserves that file for recovery.
 
 The current producer uses `finished`, `skipped`, `stopped`, `replaced` and
 `error`; a normal host shutdown may end at the output as `stopped`. Buffering
